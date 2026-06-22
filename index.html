@@ -37,12 +37,15 @@ header{position:sticky;top:0;z-index:20;background:rgba(249,246,240,.92);backdro
 .title{font-family:'Fraunces',serif;font-weight:700;font-size:28px;letter-spacing:-.015em;background:linear-gradient(135deg,var(--ink) 0%,var(--accent) 60%);background-clip:text;-webkit-background-clip:text;color:transparent}
 .title .stamp{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;background:var(--accent-soft);border-radius:20px;padding:3px 8px;margin-left:6px;letter-spacing:.02em;vertical-align:middle;background-clip:unset;-webkit-background-clip:unset;color:var(--accent)}
 .subtitle{font-size:12px;color:var(--ink-soft);font-weight:500}
-.gh-btn{display:inline-flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;padding:5px 10px;border-radius:20px;border:1.5px solid var(--line);background:var(--paper);color:var(--ink-soft);cursor:pointer;transition:all .2s}
-.gh-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-soft)}
+.gh-btn{display:inline-flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:7px 13px;border-radius:20px;border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer;transition:all .2s}
+.gh-btn:hover{background:var(--accent);color:#fff}
 .gh-btn.synced{border-color:#27ae60;color:#27ae60;background:#eafaf1}
 .gh-btn.syncing{border-color:var(--today-border);color:#7A5A00;background:var(--today-bg)}
 .gh-btn.error{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
 .sync-status{font-size:10px;color:var(--ink-soft);text-align:right;margin-top:3px}
+#setupBanner{display:none;align-items:center;gap:10px;margin:4px 0 8px;background:linear-gradient(90deg,#E0EFEB,#F2EDE4);border:2px solid var(--accent);border-radius:14px;padding:10px 14px;font-size:13px;font-weight:600;color:var(--accent);cursor:pointer;animation:pulseGreen 2s infinite}
+#setupBanner.show{display:flex}
+@keyframes pulseGreen{0%,100%{box-shadow:0 0 0 0 rgba(44,106,94,.3)}50%{box-shadow:0 0 0 6px rgba(44,106,94,.05)}}
 #alarmBar{display:none;align-items:center;gap:8px;margin:4px 0 8px;background:linear-gradient(90deg,#FFF3C4,#FFFBEA);border:1.5px solid var(--today-border);border-radius:12px;padding:7px 12px;font-size:12px;font-weight:600;color:#7A5A00;cursor:pointer}
 #alarmBar.on{display:flex}
 .alarm-dot{width:8px;height:8px;border-radius:50%;background:#F0B429;flex-shrink:0}
@@ -195,6 +198,10 @@ main{max-width:700px;margin:0 auto;padding:16px 16px 0;position:relative;z-index
   <div id="alarmBar">
     <div class="alarm-dot" id="alarmDot"></div>
     <span id="alarmBarText">Alarm active</span>
+  </div>
+  <div id="setupBanner" onclick="openGhSetup()">
+    <span style="font-size:20px">🔗</span>
+    <span>برای ذخیره در همه دستگاه‌ها — GitHub Sync را تنظیم کنید ←</span>
   </div>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
@@ -415,10 +422,11 @@ async function saveGhToken(){
 function updateSyncStatus(state,msg=''){
   const btn=document.getElementById('ghSyncBtn');
   const st=document.getElementById('syncStatus');
-  if(state==='ready'){btn.className='gh-btn synced';btn.textContent='✅ Sync Active';st.textContent='رویدادها در GitHub ذخیره می‌شوند';}
-  else if(state==='syncing'){btn.className='gh-btn syncing';btn.textContent='🔄 در حال ذخیره…';st.textContent=msg;}
+  const banner=document.getElementById('setupBanner');
+  if(state==='ready'){btn.className='gh-btn synced';btn.textContent='✅ Sync Active';st.textContent='رویدادها در GitHub ذخیره می‌شوند';banner.classList.remove('show');}
+  else if(state==='syncing'){btn.className='gh-btn syncing';btn.textContent='🔄 در حال ذخیره…';st.textContent=msg;banner.classList.remove('show');}
   else if(state==='error'){btn.className='gh-btn error';btn.textContent='⚠️ خطای Sync';st.textContent=msg;}
-  else{btn.className='gh-btn';btn.textContent='⚙️ GitHub Sync';st.textContent=msg;}
+  else{btn.className='gh-btn';btn.textContent='⚙️ GitHub Sync';st.textContent=msg;banner.classList.add('show');}
 }
 
 // ══════════════════════════════════════════════
