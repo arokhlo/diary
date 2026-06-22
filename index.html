@@ -82,7 +82,9 @@
             align-items: center;
             justify-content: space-between;
             padding-top: 18px;
-            padding-bottom: 10px
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 8px;
         }
         .title {
             font-family: 'Fraunces', serif;
@@ -113,6 +115,12 @@
             color: var(--ink-soft);
             font-weight: 500
         }
+        .sync-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
         #syncStatus {
             font-size: 11px;
             font-weight: 600;
@@ -123,7 +131,8 @@
             display: inline-flex;
             align-items: center;
             gap: 5px;
-            white-space: nowrap
+            white-space: nowrap;
+            transition: all .3s;
         }
         #syncStatus.synced {
             color: var(--accent);
@@ -136,6 +145,22 @@
         #syncStatus.error {
             color: var(--danger);
             background: var(--danger-soft);
+        }
+        .sync-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .2s;
+            white-space: nowrap;
+        }
+        .sync-btn:hover {
+            background: var(--accent-light);
+            transform: scale(1.05);
         }
         #alarmBar {
             display: none;
@@ -964,7 +989,10 @@
                 <div class="title">My Diary<span class="stamp">2026</span></div>
                 <div class="subtitle">Morteza · Mitcham, England</div>
             </div>
-            <div id="syncStatus">☁️ Synced</div>
+            <div class="sync-wrap">
+                <span id="syncStatus">☁️ Synced</span>
+                <button class="sync-btn" id="syncNowBtn">🔄 Sync Now</button>
+            </div>
         </div>
         <div id="alarmBar">
             <div class="alarm-dot" id="alarmDot"></div>
@@ -1097,7 +1125,7 @@
         function pad(n) { return String(n).padStart(2, '0'); }
 
         function todayISO() { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d
-            .getDate()); }
+                .getDate()); }
 
         function nowMinutes() { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
 
@@ -1131,13 +1159,11 @@
         function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
 
         function mergeStates(base, incoming) {
-            // Merge objects
             ['done', 'notes', 'deleted', 'edits', 'silenced'].forEach(k => {
                 if (incoming[k] && typeof incoming[k] === 'object') {
                     base[k] = { ...(base[k] || {}), ...incoming[k] };
                 }
             });
-            // Merge custom array (use id as key)
             if (incoming.custom && Array.isArray(incoming.custom)) {
                 const map = {};
                 base.custom.forEach(e => map[e.id] = e);
@@ -1186,6 +1212,10 @@
             const icons = { synced: '☁️', syncing: '🔄', error: '⚠️' };
             const labels = { synced: 'Synced', syncing: 'Syncing…', error: 'Error' };
             el.textContent = (icons[status] || '☁️') + ' ' + (msg || labels[status] || '');
+            // If error, show a more descriptive message
+            if (status === 'error') {
+                el.textContent = '⚠️ ' + (msg || 'Offline');
+            }
         }
 
         async function loadFromSupabase() {
@@ -1200,10 +1230,11 @@
 
                 if (error) {
                     console.warn('Supabase load error:', error);
-                    // If table doesn't exist, we'll create it via upsert later
-                    if (error.code === 'PGRST116') {
-                        // No data found, return null
-                        return null;
+                    // Check if table does not exist
+                    if (error.code === '42P01' || (error.message && error.message.includes('relation'))) {
+                        setSyncStatus('error', 'Table missing – create it!');
+                        showToast('⚠️ جدول diary_state در Supabase وجود ندارد. لطفاً آن را ایجاد کنید.', 4000);
+                        return false;
                     }
                     throw error;
                 }
@@ -1214,10 +1245,10 @@
                     setSyncStatus('synced');
                     return true;
                 }
-                return null;
+                return null; // no data in table yet
             } catch (e) {
                 console.error('Supabase load failed:', e);
-                setSyncStatus('error', 'Offline mode');
+                setSyncStatus('error', 'Network error');
                 return false;
             }
         }
@@ -1236,7 +1267,6 @@
                     updated_at: new Date().toISOString()
                 };
 
-                // Upsert: if row doesn't exist, insert it
                 const { data, error } = await supabase
                     .from(TABLE_NAME)
                     .upsert(payload, { onConflict: 'id' })
@@ -1245,7 +1275,6 @@
 
                 if (error) {
                     console.error('Supabase save error:', error);
-                    // If conflict (version mismatch), reload
                     if (error.code === '23505' || error.message?.includes('version')) {
                         showToast('⚠️ Conflict detected — reloading…', 2000);
                         await loadFromSupabase();
@@ -1264,8 +1293,7 @@
                 return false;
             } catch (e) {
                 console.error('Supabase save failed:', e);
-                setSyncStatus('error', 'Offline');
-                // Save to local cache as backup
+                setSyncStatus('error', 'Save failed');
                 saveLocalCache(S, localVersion);
                 return false;
             } finally {
@@ -1275,22 +1303,21 @@
 
         async function fullSync() {
             if (!supabase) {
-                initSupabase();
-                if (!supabase) return;
+                if (!initSupabase()) {
+                    setSyncStatus('error', 'No Supabase client');
+                    return;
+                }
             }
             try {
-                // Try to load from Supabase
                 const result = await loadFromSupabase();
                 if (result === null) {
-                    // No data in Supabase, push local state
-                    S = getDefaultState();
-                    localVersion = 0;
-                    // Merge built-in events into custom
-                    // Actually built-in events are hardcoded, we don't store them in state
-                    // State only stores user modifications (done, notes, custom, deleted, edits, silenced)
+                    // No data in Supabase, push local state (or default)
+                    if (!S || Object.keys(S).length === 0) {
+                        S = getDefaultState();
+                        localVersion = 0;
+                    }
                     await saveToSupabase(true);
                 } else if (result === true) {
-                    // Data loaded, render
                     render();
                 } else {
                     // Failed to load, use local cache
@@ -1319,7 +1346,6 @@
         function mutateState(updater, msg) {
             const oldS = deepClone(S);
             updater(S);
-            // Only save if something actually changed
             if (JSON.stringify(oldS) !== JSON.stringify(S)) {
                 saveLocalCache(S, localVersion);
                 // Save to Supabase in background
@@ -1333,12 +1359,14 @@
         // ══════════════════════════════════════════════
         //  GET EVENTS (merged with built-ins)
         // ══════════════════════════════════════════════
+        let activeFilter = 'all';
+        let searchQ = '';
+
         function getAllEvents() {
             const today = todayISO();
             const nowM = nowMinutes();
             let evs = [];
 
-            // Built-in events (with edits applied)
             BUILT_IN_EVENTS.forEach(e => {
                 if (S.deleted && S.deleted[e.id]) return;
                 let ev = Object.assign({}, e, { custom: false });
@@ -1348,24 +1376,19 @@
                 evs.push(ev);
             });
 
-            // Custom events
             if (S.custom && Array.isArray(S.custom)) {
                 S.custom.forEach(e => {
                     evs.push(Object.assign({}, e, { custom: true }));
                 });
             }
 
-            // Apply notes
             evs.forEach(e => {
                 if (S.notes && S.notes[e.id] !== undefined) {
                     e.notes = S.notes[e.id];
                 }
             });
 
-            // Filter: only today + future
             evs = evs.filter(e => e.date > today || e.date === today);
-
-            // Filter: only future times for today
             evs = evs.filter(e => {
                 if (e.date !== today) return true;
                 if (!e.time) return true;
@@ -1373,12 +1396,10 @@
                 return (h * 60 + m) >= nowM;
             });
 
-            // Category filter
             if (activeFilter && activeFilter !== 'all') {
                 evs = evs.filter(e => e.category === activeFilter);
             }
 
-            // Search filter
             if (searchQ && searchQ.trim()) {
                 const q = searchQ.toLowerCase().trim();
                 evs = evs.filter(e =>
@@ -1390,7 +1411,6 @@
                 );
             }
 
-            // Sort by date then time
             evs.sort((a, b) => {
                 if (a.date !== b.date) return a.date < b.date ? -1 : 1;
                 const ta = a.time || '99:99',
@@ -1404,9 +1424,6 @@
         // ══════════════════════════════════════════════
         //  RENDER CHIPS
         // ══════════════════════════════════════════════
-        let activeFilter = 'all';
-        let searchQ = '';
-
         function renderChips() {
             const div = document.getElementById('chips');
             div.innerHTML = '';
@@ -1471,7 +1488,6 @@
               </div>
             </div>`;
 
-            // Checkbox toggle
             card.querySelector('.check').onclick = () => {
                 mutateState(s => {
                     if (!s.done) s.done = {};
@@ -1479,7 +1495,6 @@
                 }, isDone ? '↩️ Unmarked' : '✅ Done!');
             };
 
-            // Notes
             const ta = card.querySelector('.notes');
             const autoResize = () => {
                 ta.style.height = 'auto';
@@ -1496,10 +1511,7 @@
                 });
             });
 
-            // Edit
             card.querySelector('.edit-btn').onclick = () => openEdit(e);
-
-            // Delete
             card.querySelector('.del-btn').onclick = async () => {
                 const ok = await confirmDlg(`Remove "${e.title}"?\nThis cannot be undone.`);
                 if (!ok) return;
@@ -1516,7 +1528,6 @@
                 }, '🗑 Event removed');
             };
 
-            // Bell
             const bb = card.querySelector('.bell-btn');
             if (bb) {
                 bb.onclick = () => {
@@ -1617,7 +1628,7 @@
             document.getElementById('modalTitle').textContent = 'New Appointment';
             document.getElementById('f-date').value = todayISO();
             ['f-time', 'f-duration', 'f-title', 'f-subtitle', 'f-notes'].forEach(id => document.getElementById(id).value =
-            '');
+                '');
             document.getElementById('f-category').value = 'work';
             backdrop.classList.add('open');
         }
@@ -1632,7 +1643,7 @@
             document.getElementById('f-title').value = e.title || '';
             document.getElementById('f-subtitle').value = e.subtitle || '';
             document.getElementById('f-notes').value = (S.notes && S.notes[e.id] !== undefined) ? S.notes[e.id] : (e
-            .notes || '');
+                .notes || '');
             backdrop.classList.add('open');
         }
 
@@ -1784,7 +1795,6 @@
             const nowM = now.getHours() * 60 + now.getMinutes();
             const nowSec = nowM * 60 + now.getSeconds();
 
-            // Build all events
             let allEvs = [];
             BUILT_IN_EVENTS.forEach(e => {
                 if (S.deleted && S.deleted[e.id]) return;
@@ -1812,7 +1822,6 @@
                 });
             });
 
-            // Clean expired silenced entries
             let changed = false;
             if (S.silenced) {
                 Object.keys(S.silenced).forEach(k => {
@@ -1851,14 +1860,22 @@
                     .eq('id', 'main')
                     .maybeSingle();
 
-                if (error) return;
+                if (error) {
+                    // If table missing, show error but don't spam
+                    if (error.code === '42P01') {
+                        setSyncStatus('error', 'Table missing');
+                        return;
+                    }
+                    return;
+                }
                 if (data && data.version > localVersion) {
-                    // Remote is newer — reload
                     const loaded = await loadFromSupabase();
                     if (loaded) {
                         render();
                         showToast('🔄 Synced from cloud', 1200);
                     }
+                } else if (data && data.version === localVersion) {
+                    setSyncStatus('synced');
                 }
             } catch (_) {}
         }
@@ -1867,7 +1884,7 @@
         //  INIT
         // ══════════════════════════════════════════════
         async function init() {
-            // Try to load from local cache first for fast display
+            // Load local cache fast
             const cache = loadLocalCache();
             if (cache && cache.state) {
                 S = cache.state;
@@ -1879,42 +1896,49 @@
                 render();
             }
 
-            // Initialize Supabase
+            // Init Supabase
             initSupabase();
 
-            // Full sync from Supabase
+            // Full sync
             await fullSync();
 
-            // Start periodic sync every 30s
+            // Periodic sync every 30s
             if (syncTimer) clearInterval(syncTimer);
             syncTimer = setInterval(periodicSync, 30000);
 
-            // Start alarm checks every 15s
+            // Alarm check every 15s
             setInterval(() => { checkAlarms(); }, 15000);
             checkAlarms();
 
-            // Also sync when page becomes visible again
+            // Visibility change
             document.addEventListener('visibilitychange', () => {
                 if (!document.hidden) {
                     periodicSync();
                 }
             });
 
-            // Sync on online event
+            // Online event
             window.addEventListener('online', () => {
                 showToast('🌐 Online — syncing…', 1500);
                 fullSync().then(() => render());
+            });
+
+            // Manual sync button
+            document.getElementById('syncNowBtn').addEventListener('click', async () => {
+                showToast('🔄 Syncing…', 1000);
+                await fullSync();
+                render();
+                showToast('✅ Sync complete', 1200);
             });
 
             console.log('📓 My Diary v3 — Supabase sync enabled');
             console.log('🔑 Using Supabase project:', SUPABASE_URL);
         }
 
-        // Override render to update sync status if offline
+        // Override render to update alarm bar
         const origRender = render;
         render = function() {
             origRender();
-            // Update alarm bar
             const today = todayISO();
             let allEvs = [];
             BUILT_IN_EVENTS.forEach(e => {
