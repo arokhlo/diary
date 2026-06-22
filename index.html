@@ -37,15 +37,6 @@ header{position:sticky;top:0;z-index:20;background:rgba(249,246,240,.92);backdro
 .title{font-family:'Fraunces',serif;font-weight:700;font-size:28px;letter-spacing:-.015em;background:linear-gradient(135deg,var(--ink) 0%,var(--accent) 60%);background-clip:text;-webkit-background-clip:text;color:transparent}
 .title .stamp{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;background:var(--accent-soft);border-radius:20px;padding:3px 8px;margin-left:6px;letter-spacing:.02em;vertical-align:middle;background-clip:unset;-webkit-background-clip:unset;color:var(--accent)}
 .subtitle{font-size:12px;color:var(--ink-soft);font-weight:500}
-.gh-btn{display:inline-flex;align-items:center;gap:5px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;padding:7px 13px;border-radius:20px;border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent);cursor:pointer;transition:all .2s}
-.gh-btn:hover{background:var(--accent);color:#fff}
-.gh-btn.synced{border-color:#27ae60;color:#27ae60;background:#eafaf1}
-.gh-btn.syncing{border-color:var(--today-border);color:#7A5A00;background:var(--today-bg)}
-.gh-btn.error{border-color:var(--danger);color:var(--danger);background:var(--danger-soft)}
-.sync-status{font-size:10px;color:var(--ink-soft);text-align:right;margin-top:3px}
-#setupBanner{display:none;align-items:center;gap:10px;margin:4px 0 8px;background:linear-gradient(90deg,#E0EFEB,#F2EDE4);border:2px solid var(--accent);border-radius:14px;padding:10px 14px;font-size:13px;font-weight:600;color:var(--accent);cursor:pointer;animation:pulseGreen 2s infinite}
-#setupBanner.show{display:flex}
-@keyframes pulseGreen{0%,100%{box-shadow:0 0 0 0 rgba(44,106,94,.3)}50%{box-shadow:0 0 0 6px rgba(44,106,94,.05)}}
 #alarmBar{display:none;align-items:center;gap:8px;margin:4px 0 8px;background:linear-gradient(90deg,#FFF3C4,#FFFBEA);border:1.5px solid var(--today-border);border-radius:12px;padding:7px 12px;font-size:12px;font-weight:600;color:#7A5A00;cursor:pointer}
 #alarmBar.on{display:flex}
 .alarm-dot{width:8px;height:8px;border-radius:50%;background:#F0B429;flex-shrink:0}
@@ -160,23 +151,6 @@ main{max-width:700px;margin:0 auto;padding:16px 16px 0;position:relative;z-index
 #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:26px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:all .35s cubic-bezier(.2,.9,.4,1.1);pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.3)}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
-/* GitHub Setup Modal */
-#ghSetupModal{position:fixed;inset:0;background:rgba(44,42,40,.75);backdrop-filter:blur(8px);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
-#ghSetupModal.open{display:flex}
-.gh-setup-box{background:var(--paper);border-radius:24px;padding:28px 24px;max-width:480px;width:100%;box-shadow:var(--shadow-lg);animation:slideUp .3s ease-out;max-height:90vh;overflow-y:auto}
-.gh-setup-box h2{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--accent);margin-bottom:8px}
-.gh-setup-box p{font-size:13px;color:var(--ink-soft);line-height:1.6;margin-bottom:14px}
-.gh-steps{background:var(--bg-soft);border-radius:14px;padding:14px 16px;margin-bottom:16px;font-size:12px;line-height:2.1;color:var(--ink);border:1px solid var(--line)}
-.gh-steps a{color:var(--accent);font-weight:600}
-.gh-steps b{color:var(--ink)}
-.gh-token-wrap{position:relative;margin-bottom:14px}
-.gh-token-input{width:100%;font-family:'IBM Plex Mono',monospace;font-size:13px;padding:11px 44px 11px 13px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg);color:var(--ink);transition:all .2s}
-.gh-token-input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(44,106,94,.15)}
-.gh-eye{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;font-size:16px;color:var(--ink-soft)}
-.gh-save-btn{width:100%;background:var(--accent);color:#fff;border:none;border-radius:40px;padding:13px;font-family:'Inter',sans-serif;font-weight:700;font-size:15px;cursor:pointer;transition:.2s}
-.gh-save-btn:hover{background:var(--accent-light)}
-.gh-skip-btn{width:100%;background:none;border:none;color:var(--ink-soft);font-size:13px;cursor:pointer;margin-top:10px;padding:6px;text-decoration:underline}
-#ghSetupStatus{margin-top:10px;font-size:12px;text-align:center;min-height:18px}
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-track{background:var(--bg)}
 ::-webkit-scrollbar-thumb{background:var(--ink-soft);border-radius:4px}
@@ -190,18 +164,10 @@ main{max-width:700px;margin:0 auto;padding:16px 16px 0;position:relative;z-index
       <div class="title">My Diary<span class="stamp">2026</span></div>
       <div class="subtitle">Morteza · Mitcham, England</div>
     </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px">
-      <button class="gh-btn" id="ghSyncBtn" onclick="openGhSetup()">⚙️ GitHub Sync</button>
-      <div class="sync-status" id="syncStatus"></div>
-    </div>
   </div>
   <div id="alarmBar">
     <div class="alarm-dot" id="alarmDot"></div>
     <span id="alarmBarText">Alarm active</span>
-  </div>
-  <div id="setupBanner" onclick="openGhSetup()">
-    <span style="font-size:20px">🔗</span>
-    <span>برای ذخیره در همه دستگاه‌ها — GitHub Sync را تنظیم کنید ←</span>
   </div>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
@@ -241,7 +207,7 @@ main{max-width:700px;margin:0 auto;padding:16px 16px 0;position:relative;z-index
     <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" rows="2" placeholder="Optional notes…"></textarea></div>
     <div class="modal-actions">
       <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
-      <button class="btn btn-primary" id="saveBtn">💾 Save &amp; Sync to GitHub</button>
+      <button class="btn btn-primary" id="saveBtn">💾 Save</button>
     </div>
   </div>
 </div>
@@ -267,40 +233,9 @@ main{max-width:700px;margin:0 auto;padding:16px 16px 0;position:relative;z-index
   <div class="alarm-hint">Tap to silence this alarm</div>
 </div>
 
-<!-- GITHUB SETUP MODAL -->
-<div id="ghSetupModal">
-  <div class="gh-setup-box">
-    <h2>🔗 تنظیم GitHub Sync</h2>
-    <p>با این قابلیت، هر رویداد جدید مستقیماً در فایل <b>index.html</b> روی GitHub ذخیره می‌شود و از هر دستگاهی قابل دسترس خواهد بود.</p>
-    <div class="gh-steps">
-      <b>چطور Personal Access Token بسازید:</b><br>
-      ۱. به <a href="https://github.com/settings/tokens/new" target="_blank">github.com/settings/tokens/new</a> بروید<br>
-      ۲. یک نام دلخواه بدهید (مثلاً: <b>diary-sync</b>)<br>
-      ۳. تیک گزینه <b>repo</b> را بزنید<br>
-      ۴. روی <b>Generate token</b> کلیک کنید<br>
-      ۵. Token را کپی کرده اینجا paste کنید
-    </div>
-    <div class="gh-token-wrap">
-      <input type="password" class="gh-token-input" id="ghTokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
-      <button class="gh-eye" id="ghEyeBtn" onclick="toggleTokenVis()" title="Show/hide token">👁</button>
-    </div>
-    <button class="gh-save-btn" onclick="saveGhToken()">✅ ذخیره و فعال‌سازی</button>
-    <button class="gh-skip-btn" onclick="closeGhSetup()">فعلاً نه، بعداً تنظیم می‌کنم</button>
-    <div id="ghSetupStatus"></div>
-  </div>
-</div>
-
 <div id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════════
-//  GITHUB CONFIG — مخزن شما
-// ══════════════════════════════════════════════
-const GH_OWNER = 'arokhlo';
-const GH_REPO  = 'diary';
-const GH_FILE  = 'index.html';
-const GH_BRANCH= 'main'; // اگر مخزن شما با 'master' است، اینجا تغییر دهید
-
 // ══════════════════════════════════════════════
 //  BUILT-IN EVENTS (رویدادهای اصلی — ثابت)
 // ══════════════════════════════════════════════
@@ -319,21 +254,13 @@ const BUILT_IN_EVENTS=[
   {id:'b12',date:'2027-02-02',time:'10:45',duration:'TBC',category:'medical',title:'Eye Appointment',subtitle:null,notes:'Royal Preston Hospital',flag:'Original sheet shows 2 Feb 2022 — verify correct year.'},
 ];
 
-// ══════════════════════════════════════════════
-//  CUSTOM EVENTS — این بخش توسط GitHub Sync به‌روز می‌شود
-//  هر بار که رویداد جدید اضافه می‌کنید، این آرایه در GitHub ذخیره می‌شود
-// ══════════════════════════════════════════════
-/* __CUSTOM_EVENTS_JSON_START__ */
-var SYNCED_CUSTOM_EVENTS = [];
-/* __CUSTOM_EVENTS_JSON_END__ */
-
 const CAT_LABEL={work:'Work',education:'Education',medical:'Medical',benefits:'Benefits',other:'Other'};
 const MONTHS=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
 const WDAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
 const SK='my-diary-2026-v3';
 
 // ══════════════════════════════════════════════
-//  STATE
+//  STATE — همه چیز فقط در همین مرورگر (localStorage) ذخیره می‌شود
 // ══════════════════════════════════════════════
 function loadState(){
   try{const r=localStorage.getItem(SK);if(r)return JSON.parse(r);}catch(e){}
@@ -342,162 +269,10 @@ function loadState(){
 let S=loadState();
 ['done','notes','custom','deleted','edits','silenced'].forEach(k=>{if(!S[k])S[k]=k==='custom'?[]:{};});
 
-// Merge synced events from GitHub (embedded in file) into localStorage
-(function mergeFromGitHub(){
-  if(!SYNCED_CUSTOM_EVENTS.length) return;
-  const lsIds=new Set(S.custom.map(e=>e.id));
-  SYNCED_CUSTOM_EVENTS.forEach(e=>{if(!lsIds.has(e.id)){S.custom.push(e);}});
-  // Also update existing events with synced data
-  S.custom=S.custom.map(localEv=>{
-    const synced=SYNCED_CUSTOM_EVENTS.find(s=>s.id===localEv.id);
-    return synced?Object.assign({},localEv,synced):localEv;
-  });
-  save();
-})();
-
 function save(){localStorage.setItem(SK,JSON.stringify(S));}
 
 let activeFilter='all';
 let searchQ='';
-
-// ══════════════════════════════════════════════
-//  GITHUB TOKEN
-// ══════════════════════════════════════════════
-function getGhToken(){return localStorage.getItem('gh_pat')||'';}
-function setGhToken(t){if(t)localStorage.setItem('gh_pat',t);else localStorage.removeItem('gh_pat');}
-
-function toggleTokenVis(){
-  const inp=document.getElementById('ghTokenInput');
-  inp.type=inp.type==='password'?'text':'password';
-}
-
-function openGhSetup(){
-  const t=getGhToken();
-  const inp=document.getElementById('ghTokenInput');
-  inp.value='';
-  inp.placeholder=t?'(token already saved — paste new to replace)':'ghp_xxxxxxxxxxxxxxxxxxxx';
-  document.getElementById('ghSetupStatus').textContent='';
-  document.getElementById('ghSetupModal').classList.add('open');
-}
-function closeGhSetup(){document.getElementById('ghSetupModal').classList.remove('open');}
-
-async function saveGhToken(){
-  const val=document.getElementById('ghTokenInput').value.trim();
-  const status=document.getElementById('ghSetupStatus');
-  if(!val){
-    // If no new value but token already exists, just close
-    if(getGhToken()){closeGhSetup();return;}
-    status.style.color='var(--danger)';
-    status.textContent='⚠️ لطفاً Token را وارد کنید.';
-    return;
-  }
-  status.style.color='var(--ink-soft)';
-  status.textContent='🔄 در حال تست اتصال…';
-  try{
-    const r=await fetch(`https://api.github.com/repos/${GH_OWNER}/${GH_REPO}`,{
-      headers:{Authorization:`token ${val}`,'Accept':'application/vnd.github.v3+json'}
-    });
-    if(r.ok){
-      setGhToken(val);
-      status.style.color='#27ae60';
-      status.textContent='✅ اتصال برقرار شد! GitHub Sync فعال است.';
-      updateSyncStatus('ready');
-      setTimeout(closeGhSetup,1800);
-    } else if(r.status===401){
-      status.style.color='var(--danger)';
-      status.textContent='❌ Token نامعتبر است. لطفاً دوباره بررسی کنید.';
-    } else if(r.status===404){
-      status.style.color='var(--danger)';
-      status.textContent=`❌ مخزن ${GH_OWNER}/${GH_REPO} یافت نشد یا دسترسی ندارید.`;
-    } else {
-      status.style.color='var(--danger)';
-      status.textContent=`❌ خطا: ${r.status}`;
-    }
-  }catch(e){
-    status.style.color='var(--danger)';
-    status.textContent='❌ خطای شبکه — اینترنت را بررسی کنید.';
-  }
-}
-
-function updateSyncStatus(state,msg=''){
-  const btn=document.getElementById('ghSyncBtn');
-  const st=document.getElementById('syncStatus');
-  const banner=document.getElementById('setupBanner');
-  if(state==='ready'){btn.className='gh-btn synced';btn.textContent='✅ Sync Active';st.textContent='رویدادها در GitHub ذخیره می‌شوند';banner.classList.remove('show');}
-  else if(state==='syncing'){btn.className='gh-btn syncing';btn.textContent='🔄 در حال ذخیره…';st.textContent=msg;banner.classList.remove('show');}
-  else if(state==='error'){btn.className='gh-btn error';btn.textContent='⚠️ خطای Sync';st.textContent=msg;}
-  else{btn.className='gh-btn';btn.textContent='⚙️ GitHub Sync';st.textContent=msg;banner.classList.add('show');}
-}
-
-// ══════════════════════════════════════════════
-//  GITHUB SYNC — مستقیم در index.html ذخیره می‌کند
-// ══════════════════════════════════════════════
-async function syncToGitHub(allCustomEvents){
-  const token=getGhToken();
-  if(!token){
-    showToast('⚠️ GitHub Sync فعال نیست — فقط در این مرورگر ذخیره شد',3500);
-    return false;
-  }
-  updateSyncStatus('syncing','در حال sync…');
-  try{
-    // 1. دریافت SHA فعلی فایل
-    const metaRes=await fetch(
-      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}?ref=${GH_BRANCH}`,
-      {headers:{Authorization:`token ${token}`,'Accept':'application/vnd.github.v3+json'}}
-    );
-    if(!metaRes.ok){
-      const err=await metaRes.json();
-      throw new Error(err.message||`GitHub API: ${metaRes.status}`);
-    }
-    const meta=await metaRes.json();
-    const sha=meta.sha;
-
-    // 2. دریافت محتوای فعلی فایل
-    // GitHub returns base64 with newlines — clean them
-    const rawB64=meta.content.replace(/\n/g,'');
-    const currentContent=decodeURIComponent(escape(atob(rawB64)));
-
-    // 3. جایگزینی بخش CUSTOM_EVENTS در فایل
-    const START='/* __CUSTOM_EVENTS_JSON_START__ */';
-    const END='/* __CUSTOM_EVENTS_JSON_END__ */';
-    const si=currentContent.indexOf(START);
-    const ei=currentContent.indexOf(END);
-    if(si===-1||ei===-1)throw new Error('نشانگر __CUSTOM_EVENTS_JSON__ در فایل یافت نشد. مطمئن شوید فایل را با همین نسخه جدید جایگزین کرده‌اید.');
-
-    const evJson=JSON.stringify(allCustomEvents,null,2);
-    const newContent=
-      currentContent.substring(0,si+START.length)+
-      '\nvar SYNCED_CUSTOM_EVENTS = '+evJson+';\n'+
-      currentContent.substring(ei);
-
-    // 4. آپلود فایل جدید
-    const encoded=btoa(unescape(encodeURIComponent(newContent)));
-    const now=new Date().toISOString().slice(0,16).replace('T',' ');
-    const pushRes=await fetch(
-      `https://api.github.com/repos/${GH_OWNER}/${GH_REPO}/contents/${GH_FILE}`,
-      {
-        method:'PUT',
-        headers:{Authorization:`token ${token}`,'Accept':'application/vnd.github.v3+json','Content-Type':'application/json'},
-        body:JSON.stringify({
-          message:`diary: update events [${now}]`,
-          content:encoded,
-          sha:sha,
-          branch:GH_BRANCH
-        })
-      }
-    );
-    if(!pushRes.ok){
-      const err=await pushRes.json();
-      throw new Error(err.message||`Push failed: ${pushRes.status}`);
-    }
-    updateSyncStatus('ready');
-    return true;
-  }catch(e){
-    console.error('GitHub sync error:',e);
-    updateSyncStatus('error',e.message.slice(0,60));
-    return false;
-  }
-}
 
 // ══════════════════════════════════════════════
 //  UTILS
@@ -616,8 +391,7 @@ function renderEvent(e){
     if(e.custom){S.custom=S.custom.filter(c=>c.id!==e.id);}
     else{S.deleted[e.id]=true;delete S.edits[e.id];}
     delete S.notes[e.id];delete S.done[e.id];save();
-    const synced=e.custom?await syncToGitHub(S.custom):false;
-    showToast(e.custom&&synced?'🗑 Deleted & synced to GitHub':'🗑 Event removed');
+    showToast('🗑 Event removed');
     render();
   };
   const bb=card.querySelector('.bell-btn');
@@ -719,9 +493,7 @@ document.getElementById('saveBtn').onclick=async()=>{
     S.custom.push(ev);S.notes[ev.id]=fields.notes;
   }
   save();backdrop.classList.remove('open');render();
-  // فقط custom events به GitHub sync می‌شوند
-  const synced=await syncToGitHub(S.custom);
-  showToast(synced?'✅ ذخیره شد و در GitHub به‌روز شد!':'✅ در این مرورگر ذخیره شد (GitHub sync فعال نیست)',3200);
+  showToast('✅ ذخیره شد');
 };
 
 // ══════════════════════════════════════════════
@@ -792,8 +564,6 @@ checkAlarms();
 // ══════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════
-if(getGhToken()){updateSyncStatus('ready');}
-else{setTimeout(()=>{if(!getGhToken()){updateSyncStatus('none','برای ذخیره در همه دستگاه‌ها تنظیم کنید');}},1500);}
 render();
 </script>
 </body>
