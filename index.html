@@ -12,565 +12,1556 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700;9..144,800&family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
     <style>
-        /* همان استایل‌های قبلی – برای اختصار حذف شد، اما در فایل نهایی موجود است */
-        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-        :root{--bg:#F9F6F0;--bg-soft:#F2EDE4;--paper:#fff;--ink:#2C2A28;--ink-soft:#7F766C;--line:#EADFCB;--accent:#2C6A5E;--accent-light:#3B8A7A;--accent-soft:#E0EFEB;--warn:#CC6D3A;--warn-soft:#FEF0E6;--today-border:#F0B429;--today-bg:#FFFBEA;--today-bg-deep:#FFF3C4;--danger:#E53935;--danger-soft:#FFEBEE;--shadow-sm:0 2px 6px rgba(0,0,0,.02),0 4px 12px rgba(44,42,40,.05);--shadow-md:0 8px 24px -8px rgba(44,42,40,.12),0 1px 2px rgba(0,0,0,.02);--shadow-lg:0 20px 32px -12px rgba(44,42,40,.18);--cat-work:#5B4B7A;--cat-work-soft:#F1EEF7;--cat-education:#2E6A8E;--cat-education-soft:#EAF1F7;--cat-medical:#B2495B;--cat-medical-soft:#FDF0F2;--cat-benefits:#CC6D3A;--cat-benefits-soft:#FEF6EF;--cat-other:#4A7A4A;--cat-other-soft:#EBF5EB;--radius-card:20px;--radius-tab:18px}
-        body{background:var(--bg);color:var(--ink);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh;padding-bottom:110px}
-        body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle at 25% 40%,rgba(44,106,94,.02) 2%,transparent 2.5%);background-size:40px 40px;pointer-events:none;z-index:0}
-        header{position:sticky;top:0;z-index:20;background:rgba(249,246,240,.92);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:env(safe-area-inset-top,0) 20px 0}
-        .header-top{display:flex;align-items:center;justify-content:space-between;padding-top:18px;padding-bottom:10px;flex-wrap:wrap;gap:8px}
-        .title{font-family:'Fraunces',serif;font-weight:700;font-size:28px;letter-spacing:-.015em;background:linear-gradient(135deg,var(--ink) 0%,var(--accent) 60%);background-clip:text;-webkit-background-clip:text;color:transparent}
-        .title .stamp{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;background:var(--accent-soft);border-radius:20px;padding:3px 8px;margin-left:6px;letter-spacing:.02em;vertical-align:middle;background-clip:unset;-webkit-background-clip:unset;color:var(--accent)}
-        .subtitle{font-size:12px;color:var(--ink-soft);font-weight:500}
-        .sync-wrap{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-        #syncStatus{font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:30px;padding:4px 12px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;transition:all .3s}
-        #syncStatus.synced{color:var(--accent);background:var(--accent-soft)}
-        #syncStatus.syncing{color:var(--warn);background:var(--warn-soft)}
-        #syncStatus.error{color:var(--danger);background:var(--danger-soft)}
-        .sync-btn{background:var(--accent);color:#fff;border:none;border-radius:30px;padding:4px 12px;font-size:11px;font-weight:600;cursor:pointer;transition:.2s;white-space:nowrap}
-        .sync-btn:hover{background:var(--accent-light);transform:scale(1.05)}
-        #alarmBar{display:none;align-items:center;gap:8px;margin:4px 0 8px;background:linear-gradient(90deg,#FFF3C4,#FFFBEA);border:1.5px solid var(--today-border);border-radius:12px;padding:7px 12px;font-size:12px;font-weight:600;color:#7A5A00;cursor:pointer}
-        #alarmBar.on{display:flex}
-        .alarm-dot{width:8px;height:8px;border-radius:50%;background:#F0B429;flex-shrink:0}
-        .alarm-dot.ring{animation:pulseD 0.6s infinite}
-        @keyframes pulseD{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(1.5)}}
-        .search-wrap{position:relative;margin:6px 0 10px}
-        .search-wrap input{width:100%;padding:9px 36px 9px 38px;border-radius:14px;border:1.5px solid var(--line);background:var(--bg-soft);font-family:'Inter',sans-serif;font-size:14px;color:var(--ink);transition:all .2s}
-        .search-wrap input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(44,106,94,.1)}
-        .search-wrap input::placeholder{color:var(--ink-soft)}
-        .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:15px;pointer-events:none}
-        .search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);border:none;background:none;font-size:16px;color:var(--ink-soft);cursor:pointer;padding:2px 6px;border-radius:50%;display:none}
-        .search-clear.vis{display:block}
-        .chips{display:flex;gap:8px;overflow-x:auto;padding:0 0 10px;scrollbar-width:none}
-        .chips::-webkit-scrollbar{display:none}
-        .chip{flex:0 0 auto;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;padding:7px 14px;border-radius:40px;background:var(--paper);border:1px solid var(--line);color:var(--ink-soft);cursor:pointer;transition:all .2s cubic-bezier(.2,.9,.4,1.1);white-space:nowrap}
-        .chip.active{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:var(--shadow-sm)}
-        main{max-width:700px;margin:0 auto;padding:16px 16px 0;position:relative;z-index:2}
-        .empty{text-align:center;background:var(--paper);border-radius:var(--radius-card);padding:48px 24px;margin-top:20px;box-shadow:var(--shadow-sm);border:1px solid var(--line)}
-        .empty .big{font-family:'Fraunces',serif;font-size:22px;font-weight:600;color:var(--accent);margin-bottom:8px}
-        .day-group{display:flex;gap:16px;margin-bottom:26px;transition:all .2s ease}
-        .day-tab{flex:0 0 74px;background:var(--paper);border-radius:var(--radius-tab);box-shadow:var(--shadow-sm);text-align:center;padding:12px 0 10px;border:1px solid rgba(234,223,203,.5);transition:transform .2s ease,box-shadow .2s}
-        .day-tab:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
-        .day-tab.is-today{background:var(--accent);border-color:var(--accent);color:#fff;box-shadow:0 8px 18px -6px rgba(44,106,94,.4)}
-        .day-tab .holes{display:flex;justify-content:center;gap:10px;margin-bottom:6px}
-        .day-tab .holes span{width:5px;height:5px;border-radius:50%;background:var(--line)}
-        .day-tab.is-today .holes span{background:rgba(255,255,255,.5)}
-        .day-tab .num{font-family:'Fraunces',serif;font-weight:800;font-size:30px;line-height:1;letter-spacing:-.02em}
-        .day-tab .mon{font-family:'IBM Plex Mono',monospace;font-size:10px;font-weight:600;letter-spacing:.06em;margin-top:3px;color:var(--ink-soft)}
-        .day-tab.is-today .mon{color:rgba(255,255,255,.85)}
-        .day-tab .wday{font-size:9px;font-weight:500;text-transform:uppercase;letter-spacing:.03em;margin-top:4px;color:var(--ink-soft)}
-        .day-tab.is-today .wday{color:rgba(255,255,255,.9)}
-        .day-tab .tag{margin-top:6px;font-family:'IBM Plex Mono',monospace;font-size:8px;font-weight:700;background:var(--accent-soft);color:var(--accent);border-radius:20px;padding:2px 7px;display:inline-block}
-        .day-tab.is-today .tag{background:rgba(255,255,255,.2);color:#fff}
-        .day-events{flex:1;display:flex;flex-direction:column;gap:10px}
-        .event{background:var(--paper);border-radius:var(--radius-card);box-shadow:var(--shadow-sm);border:1px solid var(--line);overflow:hidden;position:relative;transition:all .25s ease}
-        .event:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
-        .event.flag{border-left:4px solid var(--warn)}
-        .event.done{opacity:.7;background:#FEFCF8}
-        .event.is-today-event{border:2.5px solid var(--today-border);background:var(--today-bg);box-shadow:0 4px 20px -4px rgba(240,180,41,.25),var(--shadow-sm)}
-        .event.is-today-event .event-title{font-weight:800!important}
-        .event.ringing-card{border-color:var(--danger)!important;animation:ringCard .5s infinite alternate}
-        @keyframes ringCard{from{box-shadow:0 0 0 0 rgba(229,57,53,.2)}to{box-shadow:0 0 0 8px rgba(229,57,53,.05)}}
-        .event-top{padding:14px 14px 10px;display:flex;gap:12px;align-items:flex-start}
-        .check{flex:0 0 24px;width:24px;height:24px;border-radius:9px;border:1.8px solid var(--line);background:var(--paper);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;margin-top:3px}
-        .check.checked{background:var(--accent);border-color:var(--accent);box-shadow:0 2px 6px rgba(44,106,94,.3)}
-        .check svg{width:13px;height:13px;display:none}
-        .check.checked svg{display:block}
-        .event-main{flex:1;min-width:0}
-        .event-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
-        .time{font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:12px;background:var(--bg-soft);padding:2px 8px;border-radius:30px;color:var(--ink)}
-        .duration{font-family:'IBM Plex Mono',monospace;font-size:10px;background:var(--bg);border-radius:16px;padding:2px 7px;color:var(--ink-soft)}
-        .cat{font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;border-radius:40px;padding:3px 9px;margin-left:auto}
-        .cat-work{background:var(--cat-work-soft);color:var(--cat-work)}
-        .cat-education{background:var(--cat-education-soft);color:var(--cat-education)}
-        .cat-medical{background:var(--cat-medical-soft);color:var(--cat-medical)}
-        .cat-benefits{background:var(--cat-benefits-soft);color:var(--cat-benefits)}
-        .cat-other{background:var(--cat-other-soft);color:var(--cat-other)}
-        .event-title{font-family:'Fraunces',serif;font-weight:700;font-size:16px;line-height:1.3;letter-spacing:-.01em}
-        .event.done .event-title{text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:var(--ink-soft)}
-        .event-subtitle{font-size:11px;color:var(--accent);margin-top:3px;font-weight:500;background:var(--accent-soft);display:inline-block;padding:2px 8px;border-radius:20px}
-        .flag-note{margin-top:10px;font-size:11px;color:var(--warn);background:var(--warn-soft);border-radius:12px;padding:5px 10px;display:inline-flex;align-items:center;gap:5px;font-weight:500}
-        .bell-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
-        .bell-btn{width:30px;height:30px;border-radius:50%;border:none;cursor:pointer;background:transparent;font-size:17px;transition:all .2s;position:relative;display:flex;align-items:center;justify-content:center}
-        .bell-btn:hover{background:rgba(240,180,41,.18);transform:scale(1.15)}
-        .bell-btn.silenced{opacity:.38;filter:grayscale(1)}
-        .bell-badge{position:absolute;top:0;right:0;width:8px;height:8px;border-radius:50%;background:var(--danger);border:2px solid #fff;display:none}
-        .bell-btn.ringing .bell-badge{display:block;animation:pulseD .4s infinite}
-        .notes{width:100%;margin-top:12px;font-family:'Inter',monospace;font-size:13px;line-height:1.5;color:var(--ink);background:#FEFCF5;border:1px solid var(--line);border-radius:14px;padding:10px 12px;resize:vertical;min-height:72px;transition:all .2s ease;box-shadow:inset 0 1px 2px rgba(0,0,0,.02)}
-        .notes:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 3px rgba(44,106,94,.1)}
-        .notes::placeholder{color:var(--ink-soft);font-style:italic;font-size:12px}
-        .action-row{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:10px;padding-top:8px;border-top:1px solid var(--line);flex-wrap:wrap}
-        .today-badge{font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:700;color:#7A5A00;background:var(--today-bg-deep);border-radius:20px;padding:3px 9px;letter-spacing:.04em;margin-right:auto}
-        .action-btn{display:inline-flex;align-items:center;gap:4px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;border:none;cursor:pointer;padding:5px 12px;border-radius:20px;transition:all .2s}
-        .edit-btn{background:var(--accent-soft);color:var(--accent)}
-        .edit-btn:hover{background:var(--accent);color:#fff}
-        .del-btn{background:var(--danger-soft);color:var(--danger)}
-        .del-btn:hover{background:var(--danger);color:#fff;box-shadow:0 2px 8px rgba(229,57,53,.3)}
-        .fab{position:fixed;bottom:26px;right:24px;width:58px;height:58px;border-radius:29px;background:var(--accent);color:#fff;border:none;box-shadow:0 12px 28px -6px rgba(44,106,94,.5);font-size:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:40;transition:all .2s cubic-bezier(.2,.9,.4,1.1)}
-        .fab:hover{transform:scale(1.06);background:var(--accent-light)}
-        .modal-backdrop{position:fixed;inset:0;background:rgba(44,42,40,.55);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center;z-index:50}
-        .modal-backdrop.open{display:flex}
-        .modal{background:var(--paper);width:100%;max-width:640px;border-radius:28px 28px 0 0;padding:24px 20px 32px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow-lg);border-top:1px solid var(--line);animation:slideUp .3s ease-out}
-        @keyframes slideUp{from{transform:translateY(30px);opacity:.7}to{transform:translateY(0);opacity:1}}
-        .modal-handle{width:34px;height:4px;border-radius:2px;background:var(--line);margin:0 auto 18px}
-        .modal h2{font-family:'Fraunces',serif;font-weight:700;font-size:24px;margin:0 0 16px;color:var(--accent)}
-        .field{margin-bottom:15px}
-        .field label{display:block;font-size:11px;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:5px}
-        .field input,.field select,.field textarea{width:100%;font-family:'Inter',sans-serif;font-size:15px;padding:11px 13px;border-radius:14px;border:1px solid var(--line);background:var(--bg);color:var(--ink);transition:all .2s}
-        .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(44,106,94,.15);background:#fff}
-        .field-row{display:flex;gap:12px}
-        .field-row>.field{flex:1}
-        .modal-actions{display:flex;gap:10px;margin-top:14px}
-        .btn{flex:1;font-family:'Inter',sans-serif;font-weight:600;font-size:15px;padding:12px;border-radius:40px;border:none;cursor:pointer;transition:.2s}
-        .btn-primary{background:var(--accent);color:#fff;box-shadow:var(--shadow-sm)}
-        .btn-primary:hover{background:var(--accent-light);transform:translateY(-1px)}
-        .btn-secondary{background:var(--bg);color:var(--ink-soft);border:1px solid var(--line)}
-        .dlg-back{position:fixed;inset:0;background:rgba(44,42,40,.6);backdrop-filter:blur(4px);z-index:100;display:none;align-items:center;justify-content:center;padding:24px}
-        .dlg-back.open{display:flex}
-        .dlg-box{background:var(--paper);border-radius:22px;padding:26px 22px;max-width:320px;width:100%;box-shadow:var(--shadow-lg);text-align:center;animation:slideUp .25s ease-out}
-        .dlg-box h3{font-family:'Fraunces',serif;font-size:20px;font-weight:700;margin-bottom:8px;color:var(--danger)}
-        .dlg-box p{font-size:13px;color:var(--ink-soft);line-height:1.6;margin-bottom:18px}
-        .dlg-acts{display:flex;gap:10px}
-        #alarmOverlay{position:fixed;inset:0;background:rgba(20,0,0,.82);backdrop-filter:blur(8px);z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px;padding:32px}
-        #alarmOverlay.on{display:flex}
-        .alarm-title{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:#fff;text-align:center;line-height:1.4}
-        .alarm-sub{font-size:13px;color:rgba(255,255,255,.7);text-align:center}
-        .alarm-big-bell{font-size:70px;animation:bellRock .4s infinite alternate}
-        @keyframes bellRock{from{transform:rotate(-15deg)}to{transform:rotate(15deg)}}
-        .alarm-dismiss{background:#fff;color:var(--ink);border:none;padding:14px 36px;border-radius:40px;font-family:'Inter',sans-serif;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.4);transition:all .2s}
-        .alarm-dismiss:hover{transform:scale(1.05)}
-        .alarm-hint{font-size:11px;color:rgba(255,255,255,.45);text-align:center}
-        #toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--ink);color:#fff;padding:11px 20px;border-radius:26px;font-size:13px;font-weight:500;z-index:300;opacity:0;transition:all .35s cubic-bezier(.2,.9,.4,1.1);pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.3)}
-        #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-        ::-webkit-scrollbar{width:4px;height:4px}
-        ::-webkit-scrollbar-track{background:var(--bg)}
-        ::-webkit-scrollbar-thumb{background:var(--ink-soft);border-radius:4px}
-        @media(max-width:480px){.title{font-size:22px}.day-tab{flex:0 0 60px;padding:10px 0 8px}.day-tab .num{font-size:24px}.day-tab .mon{font-size:8px}.day-tab .wday{font-size:8px}.day-group{gap:10px}}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent
+        }
+        :root {
+            --bg: #F9F6F0;
+            --bg-soft: #F2EDE4;
+            --paper: #fff;
+            --ink: #2C2A28;
+            --ink-soft: #7F766C;
+            --line: #EADFCB;
+            --accent: #2C6A5E;
+            --accent-light: #3B8A7A;
+            --accent-soft: #E0EFEB;
+            --warn: #CC6D3A;
+            --warn-soft: #FEF0E6;
+            --today-border: #F0B429;
+            --today-bg: #FFFBEA;
+            --today-bg-deep: #FFF3C4;
+            --danger: #E53935;
+            --danger-soft: #FFEBEE;
+            --shadow-sm: 0 2px 6px rgba(0, 0, 0, .02), 0 4px 12px rgba(44, 42, 40, .05);
+            --shadow-md: 0 8px 24px -8px rgba(44, 42, 40, .12), 0 1px 2px rgba(0, 0, 0, .02);
+            --shadow-lg: 0 20px 32px -12px rgba(44, 42, 40, .18);
+            --cat-work: #5B4B7A;
+            --cat-work-soft: #F1EEF7;
+            --cat-education: #2E6A8E;
+            --cat-education-soft: #EAF1F7;
+            --cat-medical: #B2495B;
+            --cat-medical-soft: #FDF0F2;
+            --cat-benefits: #CC6D3A;
+            --cat-benefits-soft: #FEF6EF;
+            --cat-other: #4A7A4A;
+            --cat-other-soft: #EBF5EB;
+            --radius-card: 20px;
+            --radius-tab: 18px
+        }
+        body {
+            background: var(--bg);
+            color: var(--ink);
+            font-family: 'Inter', system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            min-height: 100vh;
+            padding-bottom: 110px
+        }
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(circle at 25% 40%, rgba(44, 106, 94, .02) 2%, transparent 2.5%);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0
+        }
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: rgba(249, 246, 240, .92);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--line);
+            padding: env(safe-area-inset-top, 0) 20px 0
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 18px;
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 8px
+        }
+        .title {
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            font-size: 28px;
+            letter-spacing: -.015em;
+            background: linear-gradient(135deg, var(--ink) 0%, var(--accent) 60%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent
+        }
+        .title .stamp {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            background: var(--accent-soft);
+            border-radius: 20px;
+            padding: 3px 8px;
+            margin-left: 6px;
+            letter-spacing: .02em;
+            vertical-align: middle;
+            background-clip: unset;
+            -webkit-background-clip: unset;
+            color: var(--accent)
+        }
+        .subtitle {
+            font-size: 12px;
+            color: var(--ink-soft);
+            font-weight: 500
+        }
+        .sync-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+        #syncStatus {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--accent-soft);
+            border-radius: 30px;
+            padding: 4px 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            transition: all .3s
+        }
+        #syncStatus.synced {
+            color: var(--accent);
+            background: var(--accent-soft)
+        }
+        #syncStatus.syncing {
+            color: var(--warn);
+            background: var(--warn-soft)
+        }
+        #syncStatus.error {
+            color: var(--danger);
+            background: var(--danger-soft)
+        }
+        .sync-btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .2s;
+            white-space: nowrap
+        }
+        .sync-btn:hover {
+            background: var(--accent-light);
+            transform: scale(1.05)
+        }
+        /* ─── TODAY INFO BOX (new) ─── */
+        #todayInfo {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            background: var(--paper);
+            border-radius: 14px;
+            padding: 6px 14px;
+            margin: 8px 0 6px;
+            border: 1px solid var(--line);
+            box-shadow: var(--shadow-sm);
+            font-size: 13px;
+            font-weight: 500;
+            min-height: 38px;
+            transition: all .2s
+        }
+        #todayInfo .date-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap
+        }
+        #todayInfo .date-fa {
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            font-size: 14px;
+            color: var(--accent);
+            direction: rtl;
+            letter-spacing: .01em
+        }
+        #todayInfo .date-en {
+            font-size: 13px;
+            color: var(--ink-soft);
+            font-weight: 400
+        }
+        #todayInfo .date-sep {
+            color: var(--line);
+            font-weight: 300
+        }
+        #todayInfo .countdown {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--accent-soft);
+            padding: 2px 12px;
+            border-radius: 30px;
+            white-space: nowrap
+        }
+        #todayInfo .countdown .icon {
+            font-size: 14px
+        }
+        #todayInfo .countdown .ev-title {
+            font-weight: 400;
+            color: var(--ink-soft);
+            max-width: 120px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap
+        }
+        #todayInfo .countdown .ev-title strong {
+            font-weight: 600;
+            color: var(--ink)
+        }
+        #todayInfo .countdown.passed {
+            color: var(--ink-soft);
+            background: var(--bg-soft)
+        }
+        #todayInfo .countdown.passed .icon {
+            opacity: .5
+        }
+        #todayInfo .countdown .blink {
+            animation: pulseCount 1.2s ease-in-out infinite
+        }
+        @keyframes pulseCount {
+            0%,
+            100% {
+                opacity: 1
+            }
+            50% {
+                opacity: .3
+            }
+        }
+        @media(max-width:480px) {
+            #todayInfo {
+                font-size: 11px;
+                padding: 5px 10px;
+                min-height: 32px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 4px
+            }
+            #todayInfo .date-group {
+                justify-content: center;
+                gap: 6px
+            }
+            #todayInfo .date-fa {
+                font-size: 12px
+            }
+            #todayInfo .date-en {
+                font-size: 11px
+            }
+            #todayInfo .countdown {
+                font-size: 11px;
+                padding: 1px 10px;
+                justify-content: center
+            }
+            #todayInfo .countdown .ev-title {
+                max-width: 80px
+            }
+        }
+        /* ─── rest of original styles ─── */
+        #alarmBar {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin: 4px 0 8px;
+            background: linear-gradient(90deg, #FFF3C4, #FFFBEA);
+            border: 1.5px solid var(--today-border);
+            border-radius: 12px;
+            padding: 7px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #7A5A00;
+            cursor: pointer
+        }
+        #alarmBar.on {
+            display: flex
+        }
+        .alarm-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #F0B429;
+            flex-shrink: 0
+        }
+        .alarm-dot.ring {
+            animation: pulseD 0.6s infinite
+        }
+        @keyframes pulseD {
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+            50% {
+                opacity: .3;
+                transform: scale(1.5)
+            }
+        }
+        .search-wrap {
+            position: relative;
+            margin: 6px 0 10px
+        }
+        .search-wrap input {
+            width: 100%;
+            padding: 9px 36px 9px 38px;
+            border-radius: 14px;
+            border: 1.5px solid var(--line);
+            background: var(--bg-soft);
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: var(--ink);
+            transition: all .2s
+        }
+        .search-wrap input:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(44, 106, 94, .1)
+        }
+        .search-wrap input::placeholder {
+            color: var(--ink-soft)
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 15px;
+            pointer-events: none
+        }
+        .search-clear {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: var(--ink-soft);
+            cursor: pointer;
+            padding: 2px 6px;
+            border-radius: 50%;
+            display: none
+        }
+        .search-clear.vis {
+            display: block
+        }
+        .chips {
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            padding: 0 0 10px;
+            scrollbar-width: none
+        }
+        .chips::-webkit-scrollbar {
+            display: none
+        }
+        .chip {
+            flex: 0 0 auto;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 7px 14px;
+            border-radius: 40px;
+            background: var(--paper);
+            border: 1px solid var(--line);
+            color: var(--ink-soft);
+            cursor: pointer;
+            transition: all .2s cubic-bezier(.2, .9, .4, 1.1);
+            white-space: nowrap
+        }
+        .chip.active {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: var(--shadow-sm)
+        }
+        main {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 16px 16px 0;
+            position: relative;
+            z-index: 2
+        }
+        .empty {
+            text-align: center;
+            background: var(--paper);
+            border-radius: var(--radius-card);
+            padding: 48px 24px;
+            margin-top: 20px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--line)
+        }
+        .empty .big {
+            font-family: 'Fraunces', serif;
+            font-size: 22px;
+            font-weight: 600;
+            color: var(--accent);
+            margin-bottom: 8px
+        }
+        .day-group {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 26px;
+            transition: all .2s ease
+        }
+        .day-tab {
+            flex: 0 0 74px;
+            background: var(--paper);
+            border-radius: var(--radius-tab);
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            padding: 12px 0 10px;
+            border: 1px solid rgba(234, 223, 203, .5);
+            transition: transform .2s ease, box-shadow .2s
+        }
+        .day-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md)
+        }
+        .day-tab.is-today {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #fff;
+            box-shadow: 0 8px 18px -6px rgba(44, 106, 94, .4)
+        }
+        .day-tab .holes {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 6px
+        }
+        .day-tab .holes span {
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--line)
+        }
+        .day-tab.is-today .holes span {
+            background: rgba(255, 255, 255, .5)
+        }
+        .day-tab .num {
+            font-family: 'Fraunces', serif;
+            font-weight: 800;
+            font-size: 30px;
+            line-height: 1;
+            letter-spacing: -.02em
+        }
+        .day-tab .mon {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            letter-spacing: .06em;
+            margin-top: 3px;
+            color: var(--ink-soft)
+        }
+        .day-tab.is-today .mon {
+            color: rgba(255, 255, 255, .85)
+        }
+        .day-tab .wday {
+            font-size: 9px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: .03em;
+            margin-top: 4px;
+            color: var(--ink-soft)
+        }
+        .day-tab.is-today .wday {
+            color: rgba(255, 255, 255, .9)
+        }
+        .day-tab .tag {
+            margin-top: 6px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 8px;
+            font-weight: 700;
+            background: var(--accent-soft);
+            color: var(--accent);
+            border-radius: 20px;
+            padding: 2px 7px;
+            display: inline-block
+        }
+        .day-tab.is-today .tag {
+            background: rgba(255, 255, 255, .2);
+            color: #fff
+        }
+        .day-events {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+        }
+        .event {
+            background: var(--paper);
+            border-radius: var(--radius-card);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--line);
+            overflow: hidden;
+            position: relative;
+            transition: all .25s ease
+        }
+        .event:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px)
+        }
+        .event.flag {
+            border-left: 4px solid var(--warn)
+        }
+        .event.done {
+            opacity: .7;
+            background: #FEFCF8
+        }
+        .event.is-today-event {
+            border: 2.5px solid var(--today-border);
+            background: var(--today-bg);
+            box-shadow: 0 4px 20px -4px rgba(240, 180, 41, .25), var(--shadow-sm)
+        }
+        .event.is-today-event .event-title {
+            font-weight: 800 !important
+        }
+        .event.ringing-card {
+            border-color: var(--danger) !important;
+            animation: ringCard .5s infinite alternate
+        }
+        @keyframes ringCard {
+            from {
+                box-shadow: 0 0 0 0 rgba(229, 57, 53, .2)
+            }
+            to {
+                box-shadow: 0 0 0 8px rgba(229, 57, 53, .05)
+            }
+        }
+        .event-top {
+            padding: 14px 14px 10px;
+            display: flex;
+            gap: 12px;
+            align-items: flex-start
+        }
+        .check {
+            flex: 0 0 24px;
+            width: 24px;
+            height: 24px;
+            border-radius: 9px;
+            border: 1.8px solid var(--line);
+            background: var(--paper);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all .2s;
+            margin-top: 3px
+        }
+        .check.checked {
+            background: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 2px 6px rgba(44, 106, 94, .3)
+        }
+        .check svg {
+            width: 13px;
+            height: 13px;
+            display: none
+        }
+        .check.checked svg {
+            display: block
+        }
+        .event-main {
+            flex: 1;
+            min-width: 0
+        }
+        .event-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 5px
+        }
+        .time {
+            font-family: 'IBM Plex Mono', monospace;
+            font-weight: 600;
+            font-size: 12px;
+            background: var(--bg-soft);
+            padding: 2px 8px;
+            border-radius: 30px;
+            color: var(--ink)
+        }
+        .duration {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            background: var(--bg);
+            border-radius: 16px;
+            padding: 2px 7px;
+            color: var(--ink-soft)
+        }
+        .cat {
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            border-radius: 40px;
+            padding: 3px 9px;
+            margin-left: auto
+        }
+        .cat-work {
+            background: var(--cat-work-soft);
+            color: var(--cat-work)
+        }
+        .cat-education {
+            background: var(--cat-education-soft);
+            color: var(--cat-education)
+        }
+        .cat-medical {
+            background: var(--cat-medical-soft);
+            color: var(--cat-medical)
+        }
+        .cat-benefits {
+            background: var(--cat-benefits-soft);
+            color: var(--cat-benefits)
+        }
+        .cat-other {
+            background: var(--cat-other-soft);
+            color: var(--cat-other)
+        }
+        .event-title {
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            font-size: 16px;
+            line-height: 1.3;
+            letter-spacing: -.01em
+        }
+        .event.done .event-title {
+            text-decoration: line-through;
+            text-decoration-thickness: 2px;
+            text-decoration-color: var(--ink-soft)
+        }
+        .event-subtitle {
+            font-size: 11px;
+            color: var(--accent);
+            margin-top: 3px;
+            font-weight: 500;
+            background: var(--accent-soft);
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 20px
+        }
+        .flag-note {
+            margin-top: 10px;
+            font-size: 11px;
+            color: var(--warn);
+            background: var(--warn-soft);
+            border-radius: 12px;
+            padding: 5px 10px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 500
+        }
+        .bell-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-shrink: 0
+        }
+        .bell-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            background: transparent;
+            font-size: 17px;
+            transition: all .2s;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center
+        }
+        .bell-btn:hover {
+            background: rgba(240, 180, 41, .18);
+            transform: scale(1.15)
+        }
+        .bell-btn.silenced {
+            opacity: .38;
+            filter: grayscale(1)
+        }
+        .bell-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--danger);
+            border: 2px solid #fff;
+            display: none
+        }
+        .bell-btn.ringing .bell-badge {
+            display: block;
+            animation: pulseD .4s infinite
+        }
+        .notes {
+            width: 100%;
+            margin-top: 12px;
+            font-family: 'Inter', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            color: var(--ink);
+            background: #FEFCF5;
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 10px 12px;
+            resize: vertical;
+            min-height: 72px;
+            transition: all .2s ease;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, .02)
+        }
+        .notes:focus {
+            outline: none;
+            border-color: var(--accent);
+            background: #fff;
+            box-shadow: 0 0 0 3px rgba(44, 106, 94, .1)
+        }
+        .notes::placeholder {
+            color: var(--ink-soft);
+            font-style: italic;
+            font-size: 12px
+        }
+        .action-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid var(--line);
+            flex-wrap: wrap
+        }
+        .today-badge {
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 9px;
+            font-weight: 700;
+            color: #7A5A00;
+            background: var(--today-bg-deep);
+            border-radius: 20px;
+            padding: 3px 9px;
+            letter-spacing: .04em;
+            margin-right: auto
+        }
+        .action-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            border: none;
+            cursor: pointer;
+            padding: 5px 12px;
+            border-radius: 20px;
+            transition: all .2s
+        }
+        .edit-btn {
+            background: var(--accent-soft);
+            color: var(--accent)
+        }
+        .edit-btn:hover {
+            background: var(--accent);
+            color: #fff
+        }
+        .del-btn {
+            background: var(--danger-soft);
+            color: var(--danger)
+        }
+        .del-btn:hover {
+            background: var(--danger);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(229, 57, 53, .3)
+        }
+        .fab {
+            position: fixed;
+            bottom: 26px;
+            right: 24px;
+            width: 58px;
+            height: 58px;
+            border-radius: 29px;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            box-shadow: 0 12px 28px -6px rgba(44, 106, 94, .5);
+            font-size: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 40;
+            transition: all .2s cubic-bezier(.2, .9, .4, 1.1)
+        }
+        .fab:hover {
+            transform: scale(1.06);
+            background: var(--accent-light)
+        }
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(44, 42, 40, .55);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: flex-end;
+            justify-content: center;
+            z-index: 50
+        }
+        .modal-backdrop.open {
+            display: flex
+        }
+        .modal {
+            background: var(--paper);
+            width: 100%;
+            max-width: 640px;
+            border-radius: 28px 28px 0 0;
+            padding: 24px 20px 32px;
+            max-height: 88vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            border-top: 1px solid var(--line);
+            animation: slideUp .3s ease-out
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: .7
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1
+            }
+        }
+        .modal-handle {
+            width: 34px;
+            height: 4px;
+            border-radius: 2px;
+            background: var(--line);
+            margin: 0 auto 18px
+        }
+        .modal h2 {
+            font-family: 'Fraunces', serif;
+            font-weight: 700;
+            font-size: 24px;
+            margin: 0 0 16px;
+            color: var(--accent)
+        }
+        .field {
+            margin-bottom: 15px
+        }
+        .field label {
+            display: block;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: .03em;
+            text-transform: uppercase;
+            color: var(--ink-soft);
+            margin-bottom: 5px
+        }
+        .field input,
+        .field select,
+        .field textarea {
+            width: 100%;
+            font-family: 'Inter', sans-serif;
+            font-size: 15px;
+            padding: 11px 13px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: var(--bg);
+            color: var(--ink);
+            transition: all .2s
+        }
+        .field input:focus,
+        .field select:focus,
+        .field textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(44, 106, 94, .15);
+            background: #fff
+        }
+        .field-row {
+            display: flex;
+            gap: 12px
+        }
+        .field-row>.field {
+            flex: 1
+        }
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px
+        }
+        .btn {
+            flex: 1;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 15px;
+            padding: 12px;
+            border-radius: 40px;
+            border: none;
+            cursor: pointer;
+            transition: .2s
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+            box-shadow: var(--shadow-sm)
+        }
+        .btn-primary:hover {
+            background: var(--accent-light);
+            transform: translateY(-1px)
+        }
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--ink-soft);
+            border: 1px solid var(--line)
+        }
+        .dlg-back {
+            position: fixed;
+            inset: 0;
+            background: rgba(44, 42, 40, .6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px
+        }
+        .dlg-back.open {
+            display: flex
+        }
+        .dlg-box {
+            background: var(--paper);
+            border-radius: 22px;
+            padding: 26px 22px;
+            max-width: 320px;
+            width: 100%;
+            box-shadow: var(--shadow-lg);
+            text-align: center;
+            animation: slideUp .25s ease-out
+        }
+        .dlg-box h3 {
+            font-family: 'Fraunces', serif;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--danger)
+        }
+        .dlg-box p {
+            font-size: 13px;
+            color: var(--ink-soft);
+            line-height: 1.6;
+            margin-bottom: 18px
+        }
+        .dlg-acts {
+            display: flex;
+            gap: 10px
+        }
+        #alarmOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(20, 0, 0, .82);
+            backdrop-filter: blur(8px);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            padding: 32px
+        }
+        #alarmOverlay.on {
+            display: flex
+        }
+        .alarm-title {
+            font-family: 'Fraunces', serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            text-align: center;
+            line-height: 1.4
+        }
+        .alarm-sub {
+            font-size: 13px;
+            color: rgba(255, 255, 255, .7);
+            text-align: center
+        }
+        .alarm-big-bell {
+            font-size: 70px;
+            animation: bellRock .4s infinite alternate
+        }
+        @keyframes bellRock {
+            from {
+                transform: rotate(-15deg)
+            }
+            to {
+                transform: rotate(15deg)
+            }
+        }
+        .alarm-dismiss {
+            background: #fff;
+            color: var(--ink);
+            border: none;
+            padding: 14px 36px;
+            border-radius: 40px;
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+            transition: all .2s
+        }
+        .alarm-dismiss:hover {
+            transform: scale(1.05)
+        }
+        .alarm-hint {
+            font-size: 11px;
+            color: rgba(255, 255, 255, .45);
+            text-align: center
+        }
+        #toast {
+            position: fixed;
+            bottom: 90px;
+            left: 50%;
+            transform: translateX(-50%) translateY(16px);
+            background: var(--ink);
+            color: #fff;
+            padding: 11px 20px;
+            border-radius: 26px;
+            font-size: 13px;
+            font-weight: 500;
+            z-index: 300;
+            opacity: 0;
+            transition: all .35s cubic-bezier(.2, .9, .4, 1.1);
+            pointer-events: none;
+            white-space: nowrap;
+            max-width: 90vw;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, .3)
+        }
+        #toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0)
+        }
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg)
+        }
+        ::-webkit-scrollbar-thumb {
+            background: var(--ink-soft);
+            border-radius: 4px
+        }
+        @media(max-width:480px) {
+            .title {
+                font-size: 22px
+            }
+            .day-tab {
+                flex: 0 0 60px;
+                padding: 10px 0 8px
+            }
+            .day-tab .num {
+                font-size: 24px
+            }
+            .day-tab .mon {
+                font-size: 8px
+            }
+            .day-tab .wday {
+                font-size: 8px
+            }
+            .day-group {
+                gap: 10px
+            }
+        }
     </style>
 </head>
 <body>
 
-<header>
-    <div class="header-top">
-        <div>
-            <div class="title">My Diary<span class="stamp">2026</span></div>
-            <div class="subtitle">Morteza · Mitcham, England</div>
-        </div>
-        <div class="sync-wrap">
-            <span id="syncStatus">☁️ Synced</span>
-            <button class="sync-btn" id="syncNowBtn">🔄 Sync Now</button>
-        </div>
-    </div>
-    <div id="alarmBar">
-        <div class="alarm-dot" id="alarmDot"></div>
-        <span id="alarmBarText">Alarm active</span>
-    </div>
-    <div class="search-wrap">
-        <span class="search-icon">🔍</span>
-        <input id="searchInput" type="search" placeholder="Search by title, date (e.g. 2026-07-01) or keyword…">
-        <button class="search-clear" id="searchClear">✕</button>
-    </div>
-    <div class="chips" id="chips"></div>
-</header>
-
-<main id="main"></main>
-<button class="fab" id="addBtn" aria-label="Add appointment">+</button>
-
-<!-- MODALS -->
-<div class="modal-backdrop" id="modalBackdrop">
-    <div class="modal">
-        <div class="modal-handle"></div>
-        <h2 id="modalTitle">New Appointment</h2>
-        <div class="field-row">
-            <div class="field"><label for="f-date">Date</label><input type="date" id="f-date"></div>
-            <div class="field"><label for="f-time">Time</label><input type="time" id="f-time"></div>
-        </div>
-        <div class="field-row">
-            <div class="field"><label for="f-duration">Duration</label><input type="text" id="f-duration" placeholder="e.g. 30 min"></div>
-            <div class="field">
-                <label for="f-category">Category</label>
-                <select id="f-category">
-                    <option value="work">Work</option>
-                    <option value="education">Education</option>
-                    <option value="medical">Medical</option>
-                    <option value="benefits">Benefits</option>
-                    <option value="other">Other</option>
-                </select>
+    <header>
+        <div class="header-top">
+            <div>
+                <div class="title">My Diary<span class="stamp">2026</span></div>
+                <div class="subtitle">Morteza · Mitcham, England</div>
+            </div>
+            <div class="sync-wrap">
+                <span id="syncStatus">☁️ Synced</span>
+                <button class="sync-btn" id="syncNowBtn">🔄 Sync Now</button>
             </div>
         </div>
-        <div class="field"><label for="f-title">Title</label><input type="text" id="f-title" placeholder="e.g. Dentist appointment"></div>
-        <div class="field"><label for="f-subtitle">Subtitle (optional)</label><input type="text" id="f-subtitle" placeholder='e.g. "Course name"'></div>
-        <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" rows="2" placeholder="Optional notes…"></textarea></div>
-        <div class="modal-actions">
-            <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
-            <button class="btn btn-primary" id="saveBtn">💾 Save</button>
+
+        <!-- ─── TODAY INFO BOX (new) ─── -->
+        <div id="todayInfo">
+            <div class="date-group">
+                <span class="date-fa" id="persianDate"></span>
+                <span class="date-sep">·</span>
+                <span class="date-en" id="englishDate"></span>
+            </div>
+            <span class="countdown" id="countdownDisplay">
+                <span class="icon">⏱</span>
+                <span id="countdownText">—</span>
+                <span class="ev-title" id="countdownEvent"></span>
+            </span>
+        </div>
+
+        <div id="alarmBar">
+            <div class="alarm-dot" id="alarmDot"></div>
+            <span id="alarmBarText">Alarm active</span>
+        </div>
+        <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input id="searchInput" type="search" placeholder="Search by title, date (e.g. 2026-07-01) or keyword…">
+            <button class="search-clear" id="searchClear">✕</button>
+        </div>
+        <div class="chips" id="chips"></div>
+    </header>
+
+    <main id="main"></main>
+    <button class="fab" id="addBtn" aria-label="Add appointment">+</button>
+
+    <!-- MODALS -->
+    <div class="modal-backdrop" id="modalBackdrop">
+        <div class="modal">
+            <div class="modal-handle"></div>
+            <h2 id="modalTitle">New Appointment</h2>
+            <div class="field-row">
+                <div class="field"><label for="f-date">Date</label><input type="date" id="f-date"></div>
+                <div class="field"><label for="f-time">Time</label><input type="time" id="f-time"></div>
+            </div>
+            <div class="field-row">
+                <div class="field"><label for="f-duration">Duration</label><input type="text" id="f-duration" placeholder="e.g. 30 min"></div>
+                <div class="field">
+                    <label for="f-category">Category</label>
+                    <select id="f-category">
+                        <option value="work">Work</option>
+                        <option value="education">Education</option>
+                        <option value="medical">Medical</option>
+                        <option value="benefits">Benefits</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="field"><label for="f-title">Title</label><input type="text" id="f-title" placeholder="e.g. Dentist appointment"></div>
+            <div class="field"><label for="f-subtitle">Subtitle (optional)</label><input type="text" id="f-subtitle" placeholder='e.g. "Course name"'></div>
+            <div class="field"><label for="f-notes">Notes</label><textarea id="f-notes" rows="2" placeholder="Optional notes…"></textarea></div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveBtn">💾 Save</button>
+            </div>
         </div>
     </div>
-</div>
 
-<div class="dlg-back" id="dlgBack">
-    <div class="dlg-box">
-        <h3>🗑 Delete Event?</h3>
-        <p id="dlgMsg">This will permanently remove this event.</p>
-        <div class="dlg-acts">
-            <button class="btn btn-secondary" id="dlgCancel">Cancel</button>
-            <button class="btn" id="dlgOk" style="background:var(--danger);color:#fff">Delete</button>
+    <div class="dlg-back" id="dlgBack">
+        <div class="dlg-box">
+            <h3>🗑 Delete Event?</h3>
+            <p id="dlgMsg">This will permanently remove this event.</p>
+            <div class="dlg-acts">
+                <button class="btn btn-secondary" id="dlgCancel">Cancel</button>
+                <button class="btn" id="dlgOk" style="background:var(--danger);color:#fff">Delete</button>
+            </div>
         </div>
     </div>
-</div>
 
-<div id="alarmOverlay">
-    <div class="alarm-big-bell">🔔</div>
-    <div class="alarm-title" id="overlayTitle">Upcoming appointment</div>
-    <div class="alarm-sub" id="overlaySub"></div>
-    <button class="alarm-dismiss" id="overlayDismiss">Stop Alarm</button>
-    <div class="alarm-hint">Tap to silence this alarm</div>
-</div>
+    <div id="alarmOverlay">
+        <div class="alarm-big-bell">🔔</div>
+        <div class="alarm-title" id="overlayTitle">Upcoming appointment</div>
+        <div class="alarm-sub" id="overlaySub"></div>
+        <button class="alarm-dismiss" id="overlayDismiss">Stop Alarm</button>
+        <div class="alarm-hint">Tap to silence this alarm</div>
+    </div>
 
-<div id="toast"></div>
+    <div id="toast"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js"></script>
-<script>
-// ══════════════════════════════════════════════
-//  SUPABASE CONFIG
-// ══════════════════════════════════════════════
-const SUPABASE_URL = 'https://qttnzpwfvrbfkonscder.supabase.co';
-const SUPABASE_ANON =
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0dG56cHdmdnJiZmtvbnNjZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzA3ODMsImV4cCI6MjA5NzcwNjc4M30.9Nc69_y1Wkr0NSn81QsreZ_7auOKzUAJjdF1TWEcdOM';
-const TABLE_NAME = 'diary_state';
-const LS_KEY = 'my-diary-2026-v3-local-cache';
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.49.4/dist/umd/supabase.min.js">
+    </script>
+    <script>
+        // ══════════════════════════════════════════════
+        //  SUPABASE CONFIG
+        // ══════════════════════════════════════════════
+        const SUPABASE_URL = 'https://qttnzpwfvrbfkonscder.supabase.co';
+        const SUPABASE_ANON =
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF0dG56cHdmdnJiZmtvbnNjZGVyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIxMzA3ODMsImV4cCI6MjA5NzcwNjc4M30.9Nc69_y1Wkr0NSn81QsreZ_7auOKzUAJjdF1TWEcdOM';
+        const TABLE_NAME = 'diary_state';
+        const LS_KEY = 'my-diary-2026-v3-local-cache';
 
-let supabase = null;
-let S = {};
-let localVersion = 0;
-let syncing = false;
-let syncTimer = null;
+        let supabase = null;
+        let S = {};
+        let localVersion = 0;
+        let syncing = false;
+        let syncTimer = null;
 
-// ─── Built-in events ─────────────────────────────
-const BUILT_IN_EVENTS = [
-    { id: 'b1', date: '2026-06-16', time: '16:10', duration: '20 min', category: 'benefits', title: 'Job Centre – Universal Credit Appointment',
-        subtitle: null, notes: 'Bring UC journal & ID' },
-    { id: 'b2', date: '2026-06-16', time: '16:00', duration: '1 hr', category: 'education', title: 'Teams Meeting – Intro to Skills Connected',
-        subtitle: '"Modern Data Engineering with AI"', notes: 'Online via Microsoft Teams' },
-    { id: 'b3', date: '2026-06-19', time: '13:00', duration: '4 hrs', category: 'work', title: 'Lancaster RAIS',
-        subtitle: null, notes: 'Lancaster – confirm venue' },
-    { id: 'b4', date: '2026-06-19', time: '17:00', duration: 'TBC', category: 'work', title: 'Interpreting Exam',
-        subtitle: null, notes: '' },
-    { id: 'b5', date: '2026-06-22', time: '11:00', duration: '20 min', category: 'education', title: 'Interview – Sparta Education Meeting',
-        subtitle: '"Modern Data Engineering with AI"', notes: 'Phone interview – prepare goals & questions' },
-    { id: 'b6', date: '2026-06-23', time: '10:00', duration: 'TBC', category: 'work', title: 'Maximus – Cotton Court',
-        subtitle: null, notes: 'Cotton Court, Preston' },
-    { id: 'b7', date: '2026-06-29', time: null, duration: '3 weeks', category: 'education', title: 'SPARTA Programme starts',
-        subtitle: '"Modern Data Engineering with AI"', notes: '3-week intensive Skill Sprint' },
-    { id: 'b8', date: '2026-07-01', time: '16:05', duration: '20 min', category: 'benefits', title: 'Job Centre – Universal Credit Appointment',
-        subtitle: null, notes: 'Bring UC journal & ID' },
-    { id: 'b9', date: '2026-07-15', time: '14:00', duration: 'TBC', category: 'work', title: 'Foxton Expert Group',
-        subtitle: null, notes: '' },
-    { id: 'b10', date: '2026-07-22', time: '13:30', duration: 'TBC', category: 'medical', title: 'Dental Appointment – Chorley',
-        subtitle: null, notes: 'Dental practice, Chorley' },
-    { id: 'b11', date: '2026-07-27', time: '14:20', duration: 'TBC', category: 'medical', title: 'Kidney Stone Appointment',
-        subtitle: null, notes: 'Royal Preston Hospital' },
-    { id: 'b12', date: '2027-02-02', time: '10:45', duration: 'TBC', category: 'medical', title: 'Eye Appointment',
-        subtitle: null, notes: 'Royal Preston Hospital', flag: 'Original sheet shows 2 Feb 2022 — verify correct year.' },
-];
+        // ─── Built-in events ─────────────────────────────
+        const BUILT_IN_EVENTS = [
+            { id: 'b1', date: '2026-06-16', time: '16:10', duration: '20 min', category: 'benefits', title: 'Job Centre – Universal Credit Appointment',
+                subtitle: null, notes: 'Bring UC journal & ID' },
+            { id: 'b2', date: '2026-06-16', time: '16:00', duration: '1 hr', category: 'education', title: 'Teams Meeting – Intro to Skills Connected',
+                subtitle: '"Modern Data Engineering with AI"', notes: 'Online via Microsoft Teams' },
+            { id: 'b3', date: '2026-06-19', time: '13:00', duration: '4 hrs', category: 'work', title: 'Lancaster RAIS',
+                subtitle: null, notes: 'Lancaster – confirm venue' },
+            { id: 'b4', date: '2026-06-19', time: '17:00', duration: 'TBC', category: 'work', title: 'Interpreting Exam',
+                subtitle: null, notes: '' },
+            { id: 'b5', date: '2026-06-22', time: '11:00', duration: '20 min', category: 'education', title: 'Interview – Sparta Education Meeting',
+                subtitle: '"Modern Data Engineering with AI"', notes: 'Phone interview – prepare goals & questions' },
+            { id: 'b6', date: '2026-06-23', time: '10:00', duration: 'TBC', category: 'work', title: 'Maximus – Cotton Court',
+                subtitle: null, notes: 'Cotton Court, Preston' },
+            { id: 'b7', date: '2026-06-29', time: null, duration: '3 weeks', category: 'education', title: 'SPARTA Programme starts',
+                subtitle: '"Modern Data Engineering with AI"', notes: '3-week intensive Skill Sprint' },
+            { id: 'b8', date: '2026-07-01', time: '16:05', duration: '20 min', category: 'benefits', title: 'Job Centre – Universal Credit Appointment',
+                subtitle: null, notes: 'Bring UC journal & ID' },
+            { id: 'b9', date: '2026-07-15', time: '14:00', duration: 'TBC', category: 'work', title: 'Foxton Expert Group',
+                subtitle: null, notes: '' },
+            { id: 'b10', date: '2026-07-22', time: '13:30', duration: 'TBC', category: 'medical', title: 'Dental Appointment – Chorley',
+                subtitle: null, notes: 'Dental practice, Chorley' },
+            { id: 'b11', date: '2026-07-27', time: '14:20', duration: 'TBC', category: 'medical', title: 'Kidney Stone Appointment',
+                subtitle: null, notes: 'Royal Preston Hospital' },
+            { id: 'b12', date: '2027-02-02', time: '10:45', duration: 'TBC', category: 'medical', title: 'Eye Appointment',
+                subtitle: null, notes: 'Royal Preston Hospital', flag: 'Original sheet shows 2 Feb 2022 — verify correct year.' },
+        ];
 
-const CAT_LABEL = { work: 'Work', education: 'Education', medical: 'Medical', benefits: 'Benefits', other: 'Other' };
-const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
-const WDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+        const CAT_LABEL = { work: 'Work', education: 'Education', medical: 'Medical', benefits: 'Benefits', other: 'Other' };
+        const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+        const WDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-// ─── Utilities ─────────────────────────────────────
-function pad(n) { return String(n).padStart(2, '0'); }
-function todayISO() { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
-function nowMinutes() { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
-function parseISO(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
-function escH(s) { if (!s) return ''; return s.replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' } [
-        m])); }
-function showToast(msg, dur = 2600) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(t._t);
-    t._t = setTimeout(() => t.classList.remove('show'), dur);
-}
-function dayLabel(iso) {
-    const t = todayISO();
-    const d = parseISO(t);
-    d.setDate(d.getDate() + 1);
-    const tom = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
-    if (iso === t) return 'Today';
-    if (iso === tom) return 'Tomorrow';
-    return null;
-}
-function getDefaultState() { return { done: {}, notes: {}, custom: [], deleted: {}, edits: {}, silenced: {} }; }
-function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+        // ─── Utilities ─────────────────────────────────────
+        function pad(n) { return String(n).padStart(2, '0'); }
 
-// ─── Local cache ──────────────────────────────────
-function loadLocalCache() {
-    try { const raw = localStorage.getItem(LS_KEY); if (raw) { const data = JSON.parse(raw); if (data && data.state) return data; } } catch (
-        _) {}
-    return null;
-}
-function saveLocalCache(state, version) {
-    try { localStorage.setItem(LS_KEY, JSON.stringify({ state, version, timestamp: Date.now() })); } catch (_) {}
-}
+        function todayISO() { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d
+            .getDate()); }
 
-// ─── Supabase ──────────────────────────────────────
-function initSupabase() {
-    try {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
-        return true;
-    } catch (e) {
-        console.error('Supabase init failed:', e);
-        return false;
-    }
-}
+        function nowMinutes() { const d = new Date(); return d.getHours() * 60 + d.getMinutes(); }
 
-function setSyncStatus(status, msg) {
-    const el = document.getElementById('syncStatus');
-    el.className = status;
-    const icons = { synced: '☁️', syncing: '🔄', error: '⚠️' };
-    const labels = { synced: 'Synced', syncing: 'Syncing…', error: 'Error' };
-    el.textContent = (icons[status] || '☁️') + ' ' + (msg || labels[status] || '');
-    if (status === 'error') {
-        el.textContent = '⚠️ ' + (msg || 'Offline');
-    }
-}
+        function parseISO(s) { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); }
 
-async function loadFromSupabase() {
-    if (!supabase) return false;
-    try {
-        setSyncStatus('syncing', 'Loading…');
-        const { data, error } = await supabase
-            .from(TABLE_NAME)
-            .select('*')
-            .eq('id', 'main')
-            .maybeSingle();
+        function escH(s) { if (!s) return ''; return s.replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;',
+                '"': '&quot;' } [
+                m])); }
 
-        if (error) {
-            console.warn('Supabase load error:', error);
-            // If table does not exist, show specific message
-            if (error.code === '42P01' || (error.message && error.message.includes('relation'))) {
-                const msg = 'جدول diary_state وجود ندارد – لطفاً آن را بسازید.';
-                setSyncStatus('error', 'Table missing');
-                showToast('⚠️ ' + msg, 5000);
-                console.error('❌ Table "diary_state" does not exist. Run the SQL script.');
+        function showToast(msg, dur = 2600) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            clearTimeout(t._t);
+            t._t = setTimeout(() => t.classList.remove('show'), dur);
+        }
+
+        function dayLabel(iso) {
+            const t = todayISO();
+            const d = parseISO(t);
+            d.setDate(d.getDate() + 1);
+            const tom = d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+            if (iso === t) return 'Today';
+            if (iso === tom) return 'Tomorrow';
+            return null;
+        }
+
+        function getDefaultState() { return { done: {}, notes: {}, custom: [], deleted: {}, edits: {}, silenced: {} }; }
+
+        function deepClone(o) { return JSON.parse(JSON.stringify(o)); }
+
+        // ─── Local cache ──────────────────────────────────
+        function loadLocalCache() {
+            try { const raw = localStorage.getItem(LS_KEY); if (raw) { const data = JSON.parse(raw); if (data && data
+                    .state) return data; } } catch (_) {}
+            return null;
+        }
+
+        function saveLocalCache(state, version) {
+            try { localStorage.setItem(LS_KEY, JSON.stringify({ state, version, timestamp: Date.now() })); } catch (_) {}
+        }
+
+        // ─── Supabase ──────────────────────────────────────
+        function initSupabase() {
+            try {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+                return true;
+            } catch (e) {
+                console.error('Supabase init failed:', e);
                 return false;
             }
-            throw error;
         }
-        if (data) {
-            S = data.data || getDefaultState();
-            localVersion = data.version || 0;
-            saveLocalCache(S, localVersion);
-            setSyncStatus('synced');
-            return true;
+
+        function setSyncStatus(status, msg) {
+            const el = document.getElementById('syncStatus');
+            el.className = status;
+            const icons = { synced: '☁️', syncing: '🔄', error: '⚠️' };
+            const labels = { synced: 'Synced', syncing: 'Syncing…', error: 'Error' };
+            el.textContent = (icons[status] || '☁️') + ' ' + (msg || labels[status] || '');
+            if (status === 'error') {
+                el.textContent = '⚠️ ' + (msg || 'Offline');
+            }
         }
-        return null; // no data yet
-    } catch (e) {
-        console.error('Supabase load failed:', e);
-        setSyncStatus('error', 'Network error');
-        showToast('⚠️ خطای شبکه: ' + e.message, 3000);
-        return false;
-    }
-}
 
-async function saveToSupabase(force = false) {
-    if (!supabase) return false;
-    if (syncing && !force) return false;
-    syncing = true;
-    try {
-        setSyncStatus('syncing', 'Saving…');
-        const newVersion = localVersion + 1;
-        const payload = {
-            id: 'main',
-            data: S,
-            version: newVersion,
-            updated_at: new Date().toISOString()
-        };
+        async function loadFromSupabase() {
+            if (!supabase) return false;
+            try {
+                setSyncStatus('syncing', 'Loading…');
+                const { data, error } = await supabase
+                    .from(TABLE_NAME)
+                    .select('*')
+                    .eq('id', 'main')
+                    .maybeSingle();
 
-        const { data, error } = await supabase
-            .from(TABLE_NAME)
-            .upsert(payload, { onConflict: 'id' })
-            .select()
-            .single();
-
-        if (error) {
-            console.error('Supabase save error:', error);
-            if (error.code === '23505' || error.message?.includes('version')) {
-                showToast('⚠️ Conflict detected — reloading…', 2000);
-                await loadFromSupabase();
-                render();
+                if (error) {
+                    console.warn('Supabase load error:', error);
+                    if (error.code === '42P01' || (error.message && error.message.includes('relation'))) {
+                        const msg = 'جدول diary_state وجود ندارد – لطفاً آن را بسازید.';
+                        setSyncStatus('error', 'Table missing');
+                        showToast('⚠️ ' + msg, 5000);
+                        console.error('❌ Table "diary_state" does not exist. Run the SQL script.');
+                        return false;
+                    }
+                    throw error;
+                }
+                if (data) {
+                    S = data.data || getDefaultState();
+                    localVersion = data.version || 0;
+                    saveLocalCache(S, localVersion);
+                    setSyncStatus('synced');
+                    return true;
+                }
+                return null; // no data yet
+            } catch (e) {
+                console.error('Supabase load failed:', e);
+                setSyncStatus('error', 'Network error');
+                showToast('⚠️ خطای شبکه: ' + e.message, 3000);
                 return false;
             }
-            throw error;
         }
 
-        if (data) {
-            localVersion = data.version || newVersion;
-            saveLocalCache(S, localVersion);
-            setSyncStatus('synced');
+        async function saveToSupabase(force = false) {
+            if (!supabase) return false;
+            if (syncing && !force) return false;
+            syncing = true;
+            try {
+                setSyncStatus('syncing', 'Saving…');
+                const newVersion = localVersion + 1;
+                const payload = {
+                    id: 'main',
+                    data: S,
+                    version: newVersion,
+                    updated_at: new Date().toISOString()
+                };
+
+                const { data, error } = await supabase
+                    .from(TABLE_NAME)
+                    .upsert(payload, { onConflict: 'id' })
+                    .select()
+                    .single();
+
+                if (error) {
+                    console.error('Supabase save error:', error);
+                    if (error.code === '23505' || error.message?.includes('version')) {
+                        showToast('⚠️ Conflict detected — reloading…', 2000);
+                        await loadFromSupabase();
+                        render();
+                        return false;
+                    }
+                    throw error;
+                }
+
+                if (data) {
+                    localVersion = data.version || newVersion;
+                    saveLocalCache(S, localVersion);
+                    setSyncStatus('synced');
+                    return true;
+                }
+                return false;
+            } catch (e) {
+                console.error('Supabase save failed:', e);
+                setSyncStatus('error', 'Save failed');
+                showToast('⚠️ ذخیره در ابر شکست خورد: ' + e.message, 3000);
+                saveLocalCache(S, localVersion);
+                return false;
+            } finally {
+                syncing = false;
+            }
+        }
+
+        async function fullSync() {
+            if (!supabase) {
+                if (!initSupabase()) {
+                    setSyncStatus('error', 'No Supabase client');
+                    showToast('⚠️ کلاینت Supabase راه‌اندازی نشد.', 3000);
+                    return;
+                }
+            }
+            try {
+                const result = await loadFromSupabase();
+                if (result === null) {
+                    if (!S || Object.keys(S).length === 0) {
+                        S = getDefaultState();
+                        localVersion = 0;
+                    }
+                    await saveToSupabase(true);
+                } else if (result === true) {
+                    render();
+                } else {
+                    const cache = loadLocalCache();
+                    if (cache && cache.state) {
+                        S = cache.state;
+                        localVersion = cache.version || 0;
+                        showToast('📴 Offline — using cached data', 2000);
+                        render();
+                    }
+                }
+            } catch (e) {
+                console.error('Full sync error:', e);
+                const cache = loadLocalCache();
+                if (cache && cache.state) {
+                    S = cache.state;
+                    localVersion = cache.version || 0;
+                    render();
+                }
+            }
+        }
+
+        // ─── State mutations ──────────────────────────────
+        function mutateState(updater, msg) {
+            const oldS = deepClone(S);
+            updater(S);
+            if (JSON.stringify(oldS) !== JSON.stringify(S)) {
+                saveLocalCache(S, localVersion);
+                saveToSupabase().then(() => { render(); }).catch(() => {});
+                render();
+                if (msg) showToast(msg, 1500);
+            }
             return true;
         }
-        return false;
-    } catch (e) {
-        console.error('Supabase save failed:', e);
-        setSyncStatus('error', 'Save failed');
-        showToast('⚠️ ذخیره در ابر شکست خورد: ' + e.message, 3000);
-        saveLocalCache(S, localVersion);
-        return false;
-    } finally {
-        syncing = false;
-    }
-}
 
-async function fullSync() {
-    if (!supabase) {
-        if (!initSupabase()) {
-            setSyncStatus('error', 'No Supabase client');
-            showToast('⚠️ کلاینت Supabase راه‌اندازی نشد.', 3000);
-            return;
-        }
-    }
-    try {
-        const result = await loadFromSupabase();
-        if (result === null) {
-            // No data in Supabase, push local state (or default)
-            if (!S || Object.keys(S).length === 0) {
-                S = getDefaultState();
-                localVersion = 0;
+        // ─── Get events ────────────────────────────────────
+        let activeFilter = 'all';
+        let searchQ = '';
+
+        function getAllEvents() {
+            const today = todayISO();
+            const nowM = nowMinutes();
+            let evs = [];
+
+            BUILT_IN_EVENTS.forEach(e => {
+                if (S.deleted && S.deleted[e.id]) return;
+                let ev = Object.assign({}, e, { custom: false });
+                if (S.edits && S.edits[e.id]) ev = Object.assign(ev, S.edits[e.id]);
+                evs.push(ev);
+            });
+
+            if (S.custom && Array.isArray(S.custom)) {
+                S.custom.forEach(e => evs.push(Object.assign({}, e, { custom: true })));
             }
-            await saveToSupabase(true);
-        } else if (result === true) {
-            render();
-        } else {
-            // Failed to load, use local cache
-            const cache = loadLocalCache();
-            if (cache && cache.state) {
-                S = cache.state;
-                localVersion = cache.version || 0;
-                showToast('📴 Offline — using cached data', 2000);
-                render();
+
+            evs.forEach(e => {
+                if (S.notes && S.notes[e.id] !== undefined) e.notes = S.notes[e.id];
+            });
+
+            evs = evs.filter(e => e.date > today || e.date === today);
+            evs = evs.filter(e => {
+                if (e.date !== today) return true;
+                if (!e.time) return true;
+                const [h, m] = e.time.split(':').map(Number);
+                return (h * 60 + m) >= nowM;
+            });
+
+            if (activeFilter && activeFilter !== 'all') {
+                evs = evs.filter(e => e.category === activeFilter);
             }
+
+            if (searchQ && searchQ.trim()) {
+                const q = searchQ.toLowerCase().trim();
+                evs = evs.filter(e =>
+                    (e.title || '').toLowerCase().includes(q) ||
+                    (e.notes || '').toLowerCase().includes(q) ||
+                    (e.subtitle || '').toLowerCase().includes(q) ||
+                    (e.date || '').includes(q) ||
+                    (CAT_LABEL[e.category] || '').toLowerCase().includes(q)
+                );
+            }
+
+            evs.sort((a, b) => {
+                if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+                const ta = a.time || '99:99',
+                    tb = b.time || '99:99';
+                return ta < tb ? -1 : (ta > tb ? 1 : 0);
+            });
+
+            return evs;
         }
-    } catch (e) {
-        console.error('Full sync error:', e);
-        const cache = loadLocalCache();
-        if (cache && cache.state) {
-            S = cache.state;
-            localVersion = cache.version || 0;
-            render();
+
+        // ─── TODAY INFO: get raw today events (unfiltered by time) ───
+        function getRawTodayEvents() {
+            const today = todayISO();
+            const evs = [];
+            BUILT_IN_EVENTS.forEach(e => {
+                if (S.deleted && S.deleted[e.id]) return;
+                let ev = Object.assign({}, e);
+                if (S.edits && S.edits[e.id]) ev = Object.assign(ev, S.edits[e.id]);
+                evs.push(ev);
+            });
+            if (S.custom) {
+                S.custom.forEach(e => evs.push(Object.assign({}, e)));
+            }
+            return evs.filter(e => e.date === today && e.time);
         }
-    }
-}
 
-// ─── State mutations ──────────────────────────────
-function mutateState(updater, msg) {
-    const oldS = deepClone(S);
-    updater(S);
-    if (JSON.stringify(oldS) !== JSON.stringify(S)) {
-        saveLocalCache(S, localVersion);
-        saveToSupabase().then(() => { render(); }).catch(() => {});
-        render();
-        if (msg) showToast(msg, 1500);
-    }
-    return true;
-}
+        // ─── Render ────────────────────────────────────────
+        function renderChips() {
+            const div = document.getElementById('chips');
+            div.innerHTML = '';
+            [
+                ['all', 'All'],
+                ['work', 'Work'],
+                ['education', 'Education'],
+                ['medical', 'Medical'],
+                ['benefits', 'Benefits'],
+                ['other', 'Other']
+            ].forEach(([k, l]) => {
+                const el = document.createElement('div');
+                el.className = 'chip' + (activeFilter === k ? ' active' : '');
+                el.textContent = l;
+                el.onclick = () => { activeFilter = k;
+                    render(); };
+                div.appendChild(el);
+            });
+        }
 
-// ─── Get events ────────────────────────────────────
-let activeFilter = 'all';
-let searchQ = '';
+        let activeAlarmId = null;
 
-function getAllEvents() {
-    const today = todayISO();
-    const nowM = nowMinutes();
-    let evs = [];
+        function renderEvent(e) {
+            const card = document.createElement('div');
+            const isDone = !!(S.done && S.done[e.id]);
+            const today = todayISO();
+            const isToday = (e.date === today);
+            const isRinging = activeAlarmId === e.id;
+            let cls =
+                `event${isDone?' done':''}${e.flag?' flag':''}${isToday?' is-today-event':''}${isRinging?' ringing-card':''}`;
+            card.className = cls.trim();
 
-    BUILT_IN_EVENTS.forEach(e => {
-        if (S.deleted && S.deleted[e.id]) return;
-        let ev = Object.assign({}, e, { custom: false });
-        if (S.edits && S.edits[e.id]) ev = Object.assign(ev, S.edits[e.id]);
-        evs.push(ev);
-    });
+            const timeDisp = e.time || 'All day';
+            const catLbl = CAT_LABEL[e.category] || 'Other';
+            const showBell = isToday && !!e.time;
+            const isSilenced = !!(S.silenced && S.silenced[e.id] && Date.now() < S.silenced[e.id]);
 
-    if (S.custom && Array.isArray(S.custom)) {
-        S.custom.forEach(e => evs.push(Object.assign({}, e, { custom: true })));
-    }
-
-    evs.forEach(e => {
-        if (S.notes && S.notes[e.id] !== undefined) e.notes = S.notes[e.id];
-    });
-
-    evs = evs.filter(e => e.date > today || e.date === today);
-    evs = evs.filter(e => {
-        if (e.date !== today) return true;
-        if (!e.time) return true;
-        const [h, m] = e.time.split(':').map(Number);
-        return (h * 60 + m) >= nowM;
-    });
-
-    if (activeFilter && activeFilter !== 'all') {
-        evs = evs.filter(e => e.category === activeFilter);
-    }
-
-    if (searchQ && searchQ.trim()) {
-        const q = searchQ.toLowerCase().trim();
-        evs = evs.filter(e =>
-            (e.title || '').toLowerCase().includes(q) ||
-            (e.notes || '').toLowerCase().includes(q) ||
-            (e.subtitle || '').toLowerCase().includes(q) ||
-            (e.date || '').includes(q) ||
-            (CAT_LABEL[e.category] || '').toLowerCase().includes(q)
-        );
-    }
-
-    evs.sort((a, b) => {
-        if (a.date !== b.date) return a.date < b.date ? -1 : 1;
-        const ta = a.time || '99:99',
-            tb = b.time || '99:99';
-        return ta < tb ? -1 : (ta > tb ? 1 : 0);
-    });
-
-    return evs;
-}
-
-// ─── Render ────────────────────────────────────────
-function renderChips() {
-    const div = document.getElementById('chips');
-    div.innerHTML = '';
-    [
-        ['all', 'All'],
-        ['work', 'Work'],
-        ['education', 'Education'],
-        ['medical', 'Medical'],
-        ['benefits', 'Benefits'],
-        ['other', 'Other']
-    ].forEach(([k, l]) => {
-        const el = document.createElement('div');
-        el.className = 'chip' + (activeFilter === k ? ' active' : '');
-        el.textContent = l;
-        el.onclick = () => { activeFilter = k;
-            render(); };
-        div.appendChild(el);
-    });
-}
-
-let activeAlarmId = null;
-
-function renderEvent(e) {
-    const card = document.createElement('div');
-    const isDone = !!(S.done && S.done[e.id]);
-    const today = todayISO();
-    const isToday = (e.date === today);
-    const isRinging = activeAlarmId === e.id;
-    let cls = `event${isDone?' done':''}${e.flag?' flag':''}${isToday?' is-today-event':''}${isRinging?' ringing-card':''}`;
-    card.className = cls.trim();
-
-    const timeDisp = e.time || 'All day';
-    const catLbl = CAT_LABEL[e.category] || 'Other';
-    const showBell = isToday && !!e.time;
-    const isSilenced = !!(S.silenced && S.silenced[e.id] && Date.now() < S.silenced[e.id]);
-
-    card.innerHTML = `
+            card.innerHTML = `
     <div class="event-top">
       <div class="check ${isDone?'checked':''}" data-id="${e.id}">
         <svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5L6.2 12L13 4" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -594,439 +1585,517 @@ function renderEvent(e) {
       </div>
     </div>`;
 
-    card.querySelector('.check').onclick = () => {
-        mutateState(s => { if (!s.done) s.done = {};
-            s.done[e.id] = !s.done[e.id]; }, isDone ? '↩️ Unmarked' : '✅ Done!');
-    };
+            card.querySelector('.check').onclick = () => {
+                mutateState(s => { if (!s.done) s.done = {};
+                    s.done[e.id] = !s.done[e.id]; }, isDone ? '↩️ Unmarked' : '✅ Done!');
+            };
 
-    const ta = card.querySelector('.notes');
-    const autoResize = () => { ta.style.height = 'auto';
-        ta.style.height = Math.max(64, ta.scrollHeight) + 'px'; };
-    autoResize();
-    ta.addEventListener('input', autoResize);
-    ta.addEventListener('blur', () => {
-        const val = ta.value;
-        mutateState(s => {
-            if (!s.notes) s.notes = {};
-            if (val.trim()) s.notes[e.id] = val.trim();
-            else delete s.notes[e.id];
-        });
-    });
+            const ta = card.querySelector('.notes');
+            const autoResize = () => { ta.style.height = 'auto';
+                ta.style.height = Math.max(64, ta.scrollHeight) + 'px'; };
+            autoResize();
+            ta.addEventListener('input', autoResize);
+            ta.addEventListener('blur', () => {
+                const val = ta.value;
+                mutateState(s => {
+                    if (!s.notes) s.notes = {};
+                    if (val.trim()) s.notes[e.id] = val.trim();
+                    else delete s.notes[e.id];
+                });
+            });
 
-    card.querySelector('.edit-btn').onclick = () => openEdit(e);
-    card.querySelector('.del-btn').onclick = async () => {
-        const ok = await confirmDlg(`Remove "${e.title}"?\nThis cannot be undone.`);
-        if (!ok) return;
-        mutateState(s => {
-            if (e.custom) {
-                s.custom = (s.custom || []).filter(c => c.id !== e.id);
+            card.querySelector('.edit-btn').onclick = () => openEdit(e);
+            card.querySelector('.del-btn').onclick = async () => {
+                const ok = await confirmDlg(`Remove "${e.title}"?\nThis cannot be undone.`);
+                if (!ok) return;
+                mutateState(s => {
+                    if (e.custom) {
+                        s.custom = (s.custom || []).filter(c => c.id !== e.id);
+                    } else {
+                        if (!s.deleted) s.deleted = {};
+                        s.deleted[e.id] = true;
+                        if (s.edits) delete s.edits[e.id];
+                    }
+                    if (s.notes) delete s.notes[e.id];
+                    if (s.done) delete s.done[e.id];
+                }, '🗑 Event removed');
+            };
+
+            const bb = card.querySelector('.bell-btn');
+            if (bb) {
+                bb.onclick = () => {
+                    const id = bb.dataset.id;
+                    if (activeAlarmId === id) {
+                        stopAlarm();
+                        mutateState(s => { if (!s.silenced) s.silenced = {};
+                            s.silenced[id] = Date.now() + (10 * 60 * 1000); }, '🔕 Alarm silenced for 10 min');
+                    } else if (S.silenced && S.silenced[id] && Date.now() < S.silenced[id]) {
+                        mutateState(s => { if (s.silenced) delete s.silenced[id]; }, '🔔 Alarm re-enabled');
+                    } else {
+                        mutateState(s => { if (!s.silenced) s.silenced = {};
+                            s.silenced[id] = Date.now() + (10 * 60 * 1000); }, '🔕 Alarm silenced for 10 min');
+                    }
+                };
+            }
+
+            return card;
+        }
+
+        function render() {
+            renderChips();
+            const main = document.getElementById('main');
+            main.innerHTML = '';
+            const evs = getAllEvents();
+
+            if (!evs.length) {
+                main.innerHTML =
+                    `<div class="empty"><div class="big">${searchQ&&searchQ.trim()?'No results 🔍':'All clear ✨'}</div>${searchQ&&searchQ.trim()?'Try a different search term.':'No upcoming appointments. Tap + to add one.'}</div>`;
             } else {
-                if (!s.deleted) s.deleted = {};
-                s.deleted[e.id] = true;
-                if (s.edits) delete s.edits[e.id];
+                const today = todayISO();
+                const groups = [];
+                let ld = null;
+                evs.forEach(e => {
+                    if (e.date !== ld) { groups.push({ date: e.date, items: [] });
+                        ld = e.date; }
+                    groups[groups.length - 1].items.push(e);
+                });
+
+                groups.forEach(g => {
+                    const dObj = parseISO(g.date);
+                    const isT = (g.date === today);
+                    const lbl = dayLabel(g.date);
+                    const gEl = document.createElement('div');
+                    gEl.className = 'day-group';
+
+                    const tab = document.createElement('div');
+                    tab.className = `day-tab${isT?' is-today':''}`;
+                    tab.innerHTML =
+                        `<div class="holes"><span></span><span></span></div><div class="num">${dObj.getDate()}</div><div class="mon">${MONTHS[dObj.getMonth()]}</div><div class="wday">${WDAYS[dObj.getDay()].slice(0,3)}</div>${lbl?`<div class="tag">${lbl}</div>`:''}`;
+                    gEl.appendChild(tab);
+
+                    const col = document.createElement('div');
+                    col.className = 'day-events';
+                    g.items.forEach(e => col.appendChild(renderEvent(e)));
+                    gEl.appendChild(col);
+                    main.appendChild(gEl);
+                });
             }
-            if (s.notes) delete s.notes[e.id];
-            if (s.done) delete s.done[e.id];
-        }, '🗑 Event removed');
-    };
 
-    const bb = card.querySelector('.bell-btn');
-    if (bb) {
-        bb.onclick = () => {
-            const id = bb.dataset.id;
-            if (activeAlarmId === id) {
-                stopAlarm();
-                mutateState(s => { if (!s.silenced) s.silenced = {};
-                    s.silenced[id] = Date.now() + (10 * 60 * 1000); }, '🔕 Alarm silenced for 10 min');
-            } else if (S.silenced && S.silenced[id] && Date.now() < S.silenced[id]) {
-                mutateState(s => { if (s.silenced) delete s.silenced[id]; }, '🔔 Alarm re-enabled');
-            } else {
-                mutateState(s => { if (!s.silenced) s.silenced = {};
-                    s.silenced[id] = Date.now() + (10 * 60 * 1000); }, '🔕 Alarm silenced for 10 min');
-            }
-        };
-    }
-
-    return card;
-}
-
-function render() {
-    renderChips();
-    const main = document.getElementById('main');
-    main.innerHTML = '';
-    const evs = getAllEvents();
-
-    if (!evs.length) {
-        main.innerHTML =
-            `<div class="empty"><div class="big">${searchQ&&searchQ.trim()?'No results 🔍':'All clear ✨'}</div>${searchQ&&searchQ.trim()?'Try a different search term.':'No upcoming appointments. Tap + to add one.'}</div>`;
-        return;
-    }
-
-    const today = todayISO();
-    const groups = [];
-    let ld = null;
-    evs.forEach(e => {
-        if (e.date !== ld) { groups.push({ date: e.date, items: [] });
-            ld = e.date; }
-        groups[groups.length - 1].items.push(e);
-    });
-
-    groups.forEach(g => {
-        const dObj = parseISO(g.date);
-        const isT = (g.date === today);
-        const lbl = dayLabel(g.date);
-        const gEl = document.createElement('div');
-        gEl.className = 'day-group';
-
-        const tab = document.createElement('div');
-        tab.className = `day-tab${isT?' is-today':''}`;
-        tab.innerHTML =
-            `<div class="holes"><span></span><span></span></div><div class="num">${dObj.getDate()}</div><div class="mon">${MONTHS[dObj.getMonth()]}</div><div class="wday">${WDAYS[dObj.getDay()].slice(0,3)}</div>${lbl?`<div class="tag">${lbl}</div>`:''}`;
-        gEl.appendChild(tab);
-
-        const col = document.createElement('div');
-        col.className = 'day-events';
-        g.items.forEach(e => col.appendChild(renderEvent(e)));
-        gEl.appendChild(col);
-        main.appendChild(gEl);
-    });
-}
-
-// ─── Search ────────────────────────────────────────
-const searchInput = document.getElementById('searchInput');
-const searchClear = document.getElementById('searchClear');
-searchInput.addEventListener('input', () => {
-    searchQ = searchInput.value;
-    searchClear.classList.toggle('vis', !!searchQ.trim());
-    render();
-});
-searchClear.onclick = () => {
-    searchInput.value = '';
-    searchQ = '';
-    searchClear.classList.remove('vis');
-    render();
-    searchInput.focus();
-};
-
-// ─── Modal ─────────────────────────────────────────
-let editingId = null;
-const backdrop = document.getElementById('modalBackdrop');
-
-function openAdd() {
-    editingId = null;
-    document.getElementById('modalTitle').textContent = 'New Appointment';
-    document.getElementById('f-date').value = todayISO();
-    ['f-time', 'f-duration', 'f-title', 'f-subtitle', 'f-notes'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('f-category').value = 'work';
-    backdrop.classList.add('open');
-}
-
-function openEdit(e) {
-    editingId = e.id;
-    document.getElementById('modalTitle').textContent = 'Edit Appointment';
-    document.getElementById('f-date').value = e.date || '';
-    document.getElementById('f-time').value = e.time || '';
-    document.getElementById('f-duration').value = e.duration || '';
-    document.getElementById('f-category').value = e.category || 'work';
-    document.getElementById('f-title').value = e.title || '';
-    document.getElementById('f-subtitle').value = e.subtitle || '';
-    document.getElementById('f-notes').value = (S.notes && S.notes[e.id] !== undefined) ? S.notes[e.id] : (e.notes || '');
-    backdrop.classList.add('open');
-}
-
-document.getElementById('addBtn').onclick = openAdd;
-document.getElementById('cancelBtn').onclick = () => backdrop.classList.remove('open');
-backdrop.onclick = (ev) => { if (ev.target === backdrop) backdrop.classList.remove('open'); };
-
-document.getElementById('saveBtn').onclick = async () => {
-    const date = document.getElementById('f-date').value;
-    const title = document.getElementById('f-title').value.trim();
-    if (!date || !title) { alert('لطفاً حداقل تاریخ و عنوان را وارد کنید.'); return; }
-
-    const fields = {
-        date,
-        time: document.getElementById('f-time').value || null,
-        duration: document.getElementById('f-duration').value.trim(),
-        category: document.getElementById('f-category').value,
-        title,
-        subtitle: document.getElementById('f-subtitle').value.trim() || null,
-        notes: document.getElementById('f-notes').value.trim()
-    };
-
-    mutateState(s => {
-        if (editingId) {
-            const isCustom = (s.custom || []).some(c => c.id === editingId);
-            if (isCustom) {
-                const idx = (s.custom || []).findIndex(c => c.id === editingId);
-                if (idx > -1) s.custom[idx] = { ...s.custom[idx], ...fields };
-            } else {
-                if (!s.edits) s.edits = {};
-                s.edits[editingId] = fields;
-            }
-            if (!s.notes) s.notes = {};
-            if (fields.notes) s.notes[editingId] = fields.notes;
-            else delete s.notes[editingId];
-        } else {
-            const ev = { id: 'c' + Date.now(), ...fields, subtitle: fields.subtitle || null, custom: true };
-            if (!s.custom) s.custom = [];
-            s.custom.push(ev);
-            if (!s.notes) s.notes = {};
-            if (fields.notes) s.notes[ev.id] = fields.notes;
+            // update today info box after render
+            updateTodayInfo();
         }
-    }, '✅ Saved');
 
-    backdrop.classList.remove('open');
-};
+        // ─── TODAY INFO: update date & countdown ──────────
+        function updateTodayInfo() {
+            const now = new Date();
+            // Persian date
+            const faDate = now.toLocaleDateString('fa-IR', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+            document.getElementById('persianDate').textContent = faDate;
 
-// ─── Delete confirm ──────────────────────────────
-let _res = null;
+            // English date
+            const enDate = now.toLocaleDateString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+            document.getElementById('englishDate').textContent = enDate;
 
-function confirmDlg(msg) {
-    return new Promise(resolve => {
-        _res = resolve;
-        document.getElementById('dlgMsg').textContent = msg;
-        document.getElementById('dlgBack').classList.add('open');
-    });
-}
-document.getElementById('dlgOk').onclick = () => { document.getElementById('dlgBack').classList.remove('open'); if (_res) _res(
-        true); };
-document.getElementById('dlgCancel').onclick = () => { document.getElementById('dlgBack').classList.remove('open'); if (_res)
-        _res(false); };
+            // Countdown to first event today
+            const todayEvs = getRawTodayEvents();
+            const cdEl = document.getElementById('countdownDisplay');
+            const textEl = document.getElementById('countdownText');
+            const evEl = document.getElementById('countdownEvent');
 
-// ─── Alarm system ──────────────────────────────────
-let audioCtx = null;
-let alarmNodes = [];
-let firedAlarms = {};
-
-function getACtx() {
-    if (!audioCtx || audioCtx.state === 'closed') audioCtx = new(window.AudioContext || window.webkitAudioContext)();
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    return audioCtx;
-}
-
-function stopBeepNodes() {
-    alarmNodes.forEach(n => { try { n.stop ? n.stop() : n.disconnect(); } catch (_) {} });
-    alarmNodes = [];
-}
-
-function startContinuousBeep() {
-    stopBeepNodes();
-    const ctx = getACtx();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'square';
-    osc.frequency.value = 880;
-    gain.gain.value = 0;
-    const beepDur = 0.15,
-        beepGap = 0.25,
-        groupGap = 0.8;
-    let t = ctx.currentTime;
-    for (let rep = 0; rep < 600; rep++) {
-        for (let b = 0; b < 3; b++) {
-            const bt = t + b * (beepDur + beepGap);
-            gain.gain.setValueAtTime(0, bt);
-            gain.gain.linearRampToValueAtTime(0.5, bt + 0.02);
-            gain.gain.setValueAtTime(0.5, bt + beepDur - 0.02);
-            gain.gain.linearRampToValueAtTime(0, bt + beepDur);
-        }
-        t += 3 * (beepDur + beepGap) + groupGap;
-    }
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 600 * ((3 * (beepDur + beepGap)) + groupGap));
-    alarmNodes = [osc, gain];
-}
-
-function stopAlarm() {
-    stopBeepNodes();
-    activeAlarmId = null;
-    document.getElementById('alarmOverlay').classList.remove('on');
-    document.getElementById('alarmBar').classList.remove('on');
-}
-
-function fireAlarm(ev, minBefore) {
-    if (activeAlarmId) return;
-    activeAlarmId = ev.id;
-    const msgMap = { 60: '1 hour', 30: '30 minutes', 15: '15 minutes' };
-    const timeStr = msgMap[minBefore] || `${minBefore} min`;
-    document.getElementById('overlayTitle').textContent = ev.title;
-    document.getElementById('overlaySub').textContent = `Starting in ${timeStr} · ${ev.time}`;
-    document.getElementById('alarmOverlay').classList.add('on');
-    document.getElementById('alarmBarText').textContent = `🔔 "${ev.title}" starts in ${timeStr}`;
-    document.getElementById('alarmBar').classList.add('on');
-    document.getElementById('alarmDot').classList.add('ring');
-    startContinuousBeep();
-    render();
-}
-
-document.getElementById('overlayDismiss').onclick = () => {
-    if (activeAlarmId) {
-        mutateState(s => { if (!s.silenced) s.silenced = {};
-            s.silenced[activeAlarmId] = Date.now() + (10 * 60 * 1000); });
-    }
-    stopAlarm();
-    render();
-    showToast('🔕 Alarm stopped – re-enables in 10 min');
-};
-
-function checkAlarms() {
-    const now = new Date();
-    const today = todayISO();
-    const nowM = now.getHours() * 60 + now.getMinutes();
-    const nowSec = nowM * 60 + now.getSeconds();
-
-    let allEvs = [];
-    BUILT_IN_EVENTS.forEach(e => {
-        if (S.deleted && S.deleted[e.id]) return;
-        let ev = Object.assign({}, e);
-        if (S.edits && S.edits[e.id]) ev = Object.assign(ev, S.edits[e.id]);
-        allEvs.push(ev);
-    });
-    (S.custom || []).forEach(e => allEvs.push(Object.assign({}, e)));
-
-    const todayEvs = allEvs.filter(e => e.date === today && e.time);
-
-    todayEvs.forEach(e => {
-        const [h, m] = e.time.split(':').map(Number);
-        const evSec = (h * 60 + m) * 60;
-        [60, 30, 15].forEach(mb => {
-            const trigSec = evSec - mb * 60;
-            const key = `${e.id}_${mb}`;
-            const diff = nowSec - trigSec;
-            if (diff >= 0 && diff < 25 && !firedAlarms[key]) {
-                firedAlarms[key] = true;
-                const silUntil = S.silenced && S.silenced[e.id];
-                if (silUntil && Date.now() < silUntil) return;
-                fireAlarm(e, mb);
-            }
-        });
-    });
-
-    let changed = false;
-    if (S.silenced) {
-        Object.keys(S.silenced).forEach(k => {
-            if (Date.now() > S.silenced[k]) {
-                delete S.silenced[k];
-                changed = true;
-            }
-        });
-        if (changed) {
-            saveLocalCache(S, localVersion);
-            saveToSupabase().catch(() => {});
-        }
-    }
-
-    if (!activeAlarmId) {
-        if (todayEvs.length > 0) {
-            document.getElementById('alarmBar').classList.add('on');
-            document.getElementById('alarmDot').classList.remove('ring');
-            document.getElementById('alarmBarText').textContent =
-                `🔔 ${todayEvs.length} event${todayEvs.length>1?'s':''} today — alarms active`;
-        } else {
-            document.getElementById('alarmBar').classList.remove('on');
-        }
-    }
-}
-
-// ─── Periodic sync ─────────────────────────────────
-async function periodicSync() {
-    if (!supabase) return;
-    try {
-        const { data, error } = await supabase
-            .from(TABLE_NAME)
-            .select('version')
-            .eq('id', 'main')
-            .maybeSingle();
-
-        if (error) {
-            if (error.code === '42P01') {
-                setSyncStatus('error', 'Table missing');
+            if (todayEvs.length === 0) {
+                cdEl.className = 'countdown passed';
+                textEl.textContent = '✨ No events today';
+                evEl.innerHTML = '';
                 return;
             }
-            return;
-        }
-        if (data && data.version > localVersion) {
-            const loaded = await loadFromSupabase();
-            if (loaded) {
-                render();
-                showToast('🔄 Synced from cloud', 1200);
+
+            // sort by time
+            todayEvs.sort((a, b) => {
+                const ta = a.time || '99:99',
+                    tb = b.time || '99:99';
+                return ta < tb ? -1 : (ta > tb ? 1 : 0);
+            });
+            const first = todayEvs[0];
+            const [h, m] = first.time.split(':').map(Number);
+            const target = new Date(now);
+            target.setHours(h, m, 0, 0);
+
+            const diffMs = target - now;
+            const diffSec = Math.floor(diffMs / 1000);
+
+            if (diffSec <= 0) {
+                cdEl.className = 'countdown passed';
+                textEl.textContent = '⏳ Started / passed';
+                evEl.innerHTML = `<strong>${escH(first.title)}</strong>`;
+                return;
             }
-        } else if (data && data.version === localVersion) {
-            setSyncStatus('synced');
+
+            const hrs = Math.floor(diffSec / 3600);
+            const mins = Math.floor((diffSec % 3600) / 60);
+            const secs = diffSec % 60;
+            let display = '';
+            if (hrs > 0) display += `${hrs}h `;
+            if (mins > 0 || hrs > 0) display += `${mins}m `;
+            display += `${secs}s`;
+
+            cdEl.className = 'countdown';
+            textEl.textContent = display;
+            evEl.innerHTML = `→ <strong>${escH(first.title)}</strong>`;
         }
-    } catch (_) {}
-}
 
-// ─── Init ──────────────────────────────────────────
-async function init() {
-    const cache = loadLocalCache();
-    if (cache && cache.state) {
-        S = cache.state;
-        localVersion = cache.version || 0;
-        render();
-    } else {
-        S = getDefaultState();
-        localVersion = 0;
-        render();
-    }
+        // ─── Search ────────────────────────────────────────
+        const searchInput = document.getElementById('searchInput');
+        const searchClear = document.getElementById('searchClear');
+        searchInput.addEventListener('input', () => {
+            searchQ = searchInput.value;
+            searchClear.classList.toggle('vis', !!searchQ.trim());
+            render();
+        });
+        searchClear.onclick = () => {
+            searchInput.value = '';
+            searchQ = '';
+            searchClear.classList.remove('vis');
+            render();
+            searchInput.focus();
+        };
 
-    initSupabase();
-    await fullSync();
+        // ─── Modal ─────────────────────────────────────────
+        let editingId = null;
+        const backdrop = document.getElementById('modalBackdrop');
 
-    if (syncTimer) clearInterval(syncTimer);
-    syncTimer = setInterval(periodicSync, 30000);
+        function openAdd() {
+            editingId = null;
+            document.getElementById('modalTitle').textContent = 'New Appointment';
+            document.getElementById('f-date').value = todayISO();
+            ['f-time', 'f-duration', 'f-title', 'f-subtitle', 'f-notes'].forEach(id => document.getElementById(id).value =
+                '');
+            document.getElementById('f-category').value = 'work';
+            backdrop.classList.add('open');
+        }
 
-    setInterval(() => { checkAlarms(); }, 15000);
-    checkAlarms();
+        function openEdit(e) {
+            editingId = e.id;
+            document.getElementById('modalTitle').textContent = 'Edit Appointment';
+            document.getElementById('f-date').value = e.date || '';
+            document.getElementById('f-time').value = e.time || '';
+            document.getElementById('f-duration').value = e.duration || '';
+            document.getElementById('f-category').value = e.category || 'work';
+            document.getElementById('f-title').value = e.title || '';
+            document.getElementById('f-subtitle').value = e.subtitle || '';
+            document.getElementById('f-notes').value = (S.notes && S.notes[e.id] !== undefined) ? S.notes[e.id] : (e
+            .notes || '');
+            backdrop.classList.add('open');
+        }
 
-    document.addEventListener('visibilitychange', () => {
-        if (!document.hidden) periodicSync();
-    });
+        document.getElementById('addBtn').onclick = openAdd;
+        document.getElementById('cancelBtn').onclick = () => backdrop.classList.remove('open');
+        backdrop.onclick = (ev) => { if (ev.target === backdrop) backdrop.classList.remove('open'); };
 
-    window.addEventListener('online', () => {
-        showToast('🌐 Online — syncing…', 1500);
-        fullSync().then(() => render());
-    });
+        document.getElementById('saveBtn').onclick = async () => {
+            const date = document.getElementById('f-date').value;
+            const title = document.getElementById('f-title').value.trim();
+            if (!date || !title) { alert('لطفاً حداقل تاریخ و عنوان را وارد کنید.'); return; }
 
-    document.getElementById('syncNowBtn').addEventListener('click', async () => {
-        showToast('🔄 Syncing…', 1000);
-        await fullSync();
-        render();
-        showToast('✅ Sync complete', 1200);
-    });
+            const fields = {
+                date,
+                time: document.getElementById('f-time').value || null,
+                duration: document.getElementById('f-duration').value.trim(),
+                category: document.getElementById('f-category').value,
+                title,
+                subtitle: document.getElementById('f-subtitle').value.trim() || null,
+                notes: document.getElementById('f-notes').value.trim()
+            };
 
-    console.log('📓 My Diary v3 — Supabase sync enabled');
-    console.log('🔑 Using Supabase project:', SUPABASE_URL);
-}
+            mutateState(s => {
+                if (editingId) {
+                    const isCustom = (s.custom || []).some(c => c.id === editingId);
+                    if (isCustom) {
+                        const idx = (s.custom || []).findIndex(c => c.id === editingId);
+                        if (idx > -1) s.custom[idx] = { ...s.custom[idx], ...fields };
+                    } else {
+                        if (!s.edits) s.edits = {};
+                        s.edits[editingId] = fields;
+                    }
+                    if (!s.notes) s.notes = {};
+                    if (fields.notes) s.notes[editingId] = fields.notes;
+                    else delete s.notes[editingId];
+                } else {
+                    const ev = { id: 'c' + Date.now(), ...fields, subtitle: fields.subtitle || null, custom: true };
+                    if (!s.custom) s.custom = [];
+                    s.custom.push(ev);
+                    if (!s.notes) s.notes = {};
+                    if (fields.notes) s.notes[ev.id] = fields.notes;
+                }
+            }, '✅ Saved');
 
-// Override render to update alarm bar
-const origRender = render;
-render = function() {
-    origRender();
-    const today = todayISO();
-    let allEvs = [];
-    BUILT_IN_EVENTS.forEach(e => {
-        if (S.deleted && S.deleted[e.id]) return;
-        let ev = Object.assign({}, e);
-        if (S.edits && S.edits[e.id]) ev = Object.assign(ev, S.edits[e.id]);
-        allEvs.push(ev);
-    });
-    (S.custom || []).forEach(e => allEvs.push(Object.assign({}, e)));
-    const todayEvs = allEvs.filter(e => e.date === today && e.time);
-    if (!activeAlarmId) {
-        if (todayEvs.length > 0) {
-            document.getElementById('alarmBar').classList.add('on');
-            document.getElementById('alarmDot').classList.remove('ring');
-            document.getElementById('alarmBarText').textContent =
-                `🔔 ${todayEvs.length} event${todayEvs.length>1?'s':''} today — alarms active`;
-        } else {
+            backdrop.classList.remove('open');
+        };
+
+        // ─── Delete confirm ──────────────────────────────
+        let _res = null;
+
+        function confirmDlg(msg) {
+            return new Promise(resolve => {
+                _res = resolve;
+                document.getElementById('dlgMsg').textContent = msg;
+                document.getElementById('dlgBack').classList.add('open');
+            });
+        }
+        document.getElementById('dlgOk').onclick = () => { document.getElementById('dlgBack').classList.remove('open'); if (
+                _res) _res(
+                true); };
+        document.getElementById('dlgCancel').onclick = () => { document.getElementById('dlgBack').classList.remove('open');
+            if (_res)
+                _res(false); };
+
+        // ─── Alarm system ──────────────────────────────────
+        let audioCtx = null;
+        let alarmNodes = [];
+        let firedAlarms = {};
+
+        function getACtx() {
+            if (!audioCtx || audioCtx.state === 'closed') audioCtx = new(window.AudioContext || window
+            .webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            return audioCtx;
+        }
+
+        function stopBeepNodes() {
+            alarmNodes.forEach(n => { try { n.stop ? n.stop() : n.disconnect(); } catch (_) {} });
+            alarmNodes = [];
+        }
+
+        function startContinuousBeep() {
+            stopBeepNodes();
+            const ctx = getACtx();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = 'square';
+            osc.frequency.value = 880;
+            gain.gain.value = 0;
+            const beepDur = 0.15,
+                beepGap = 0.25,
+                groupGap = 0.8;
+            let t = ctx.currentTime;
+            for (let rep = 0; rep < 600; rep++) {
+                for (let b = 0; b < 3; b++) {
+                    const bt = t + b * (beepDur + beepGap);
+                    gain.gain.setValueAtTime(0, bt);
+                    gain.gain.linearRampToValueAtTime(0.5, bt + 0.02);
+                    gain.gain.setValueAtTime(0.5, bt + beepDur - 0.02);
+                    gain.gain.linearRampToValueAtTime(0, bt + beepDur);
+                }
+                t += 3 * (beepDur + beepGap) + groupGap;
+            }
+            osc.start(ctx.currentTime);
+            osc.stop(ctx.currentTime + 600 * ((3 * (beepDur + beepGap)) + groupGap));
+            alarmNodes = [osc, gain];
+        }
+
+        function stopAlarm() {
+            stopBeepNodes();
+            activeAlarmId = null;
+            document.getElementById('alarmOverlay').classList.remove('on');
             document.getElementById('alarmBar').classList.remove('on');
         }
-    }
-};
 
-init();
-</script>
+        function fireAlarm(ev, minBefore) {
+            if (activeAlarmId) return;
+            activeAlarmId = ev.id;
+            const msgMap = { 60: '1 hour', 30: '30 minutes', 15: '15 minutes' };
+            const timeStr = msgMap[minBefore] || `${minBefore} min`;
+            document.getElementById('overlayTitle').textContent = ev.title;
+            document.getElementById('overlaySub').textContent = `Starting in ${timeStr} · ${ev.time}`;
+            document.getElementById('alarmOverlay').classList.add('on');
+            document.getElementById('alarmBarText').textContent = `🔔 "${ev.title}" starts in ${timeStr}`;
+            document.getElementById('alarmBar').classList.add('on');
+            document.getElementById('alarmDot').classList.add('ring');
+            startContinuousBeep();
+            render();
+        }
+
+        document.getElementById('overlayDismiss').onclick = () => {
+            if (activeAlarmId) {
+                mutateState(s => { if (!s.silenced) s.silenced = {};
+                    s.silenced[activeAlarmId] = Date.now() + (10 * 60 * 1000); });
+            }
+            stopAlarm();
+            render();
+            showToast('🔕 Alarm stopped – re-enables in 10 min');
+        };
+
+        function checkAlarms() {
+            const now = new Date();
+            const today = todayISO();
+            const nowM = now.getHours() * 60 + now.getMinutes();
+            const nowSec = nowM * 60 + now.getSeconds();
+
+            let allEvs = [];
+            BUILT_IN_EVENTS.forEach(e => {
+                if (S.deleted && S.deleted[e.id]) return;
+                let ev = Object.assign({}, e);
+                if (S.edits && S.edits[e.id]) ev = Object.assign(ev, S.edits[e.id]);
+                allEvs.push(ev);
+            });
+            (S.custom || []).forEach(e => allEvs.push(Object.assign({}, e)));
+
+            const todayEvs = allEvs.filter(e => e.date === today && e.time);
+
+            todayEvs.forEach(e => {
+                const [h, m] = e.time.split(':').map(Number);
+                const evSec = (h * 60 + m) * 60;
+                [60, 30, 15].forEach(mb => {
+                    const trigSec = evSec - mb * 60;
+                    const key = `${e.id}_${mb}`;
+                    const diff = nowSec - trigSec;
+                    if (diff >= 0 && diff < 25 && !firedAlarms[key]) {
+                        firedAlarms[key] = true;
+                        const silUntil = S.silenced && S.silenced[e.id];
+                        if (silUntil && Date.now() < silUntil) return;
+                        fireAlarm(e, mb);
+                    }
+                });
+            });
+
+            let changed = false;
+            if (S.silenced) {
+                Object.keys(S.silenced).forEach(k => {
+                    if (Date.now() > S.silenced[k]) {
+                        delete S.silenced[k];
+                        changed = true;
+                    }
+                });
+                if (changed) {
+                    saveLocalCache(S, localVersion);
+                    saveToSupabase().catch(() => {});
+                }
+            }
+
+            if (!activeAlarmId) {
+                if (todayEvs.length > 0) {
+                    document.getElementById('alarmBar').classList.add('on');
+                    document.getElementById('alarmDot').classList.remove('ring');
+                    document.getElementById('alarmBarText').textContent =
+                        `🔔 ${todayEvs.length} event${todayEvs.length>1?'s':''} today — alarms active`;
+                } else {
+                    document.getElementById('alarmBar').classList.remove('on');
+                }
+            }
+        }
+
+        // ─── Periodic sync ─────────────────────────────────
+        async function periodicSync() {
+            if (!supabase) return;
+            try {
+                const { data, error } = await supabase
+                    .from(TABLE_NAME)
+                    .select('version')
+                    .eq('id', 'main')
+                    .maybeSingle();
+
+                if (error) {
+                    if (error.code === '42P01') {
+                        setSyncStatus('error', 'Table missing');
+                        return;
+                    }
+                    return;
+                }
+                if (data && data.version > localVersion) {
+                    const loaded = await loadFromSupabase();
+                    if (loaded) {
+                        render();
+                        showToast('🔄 Synced from cloud', 1200);
+                    }
+                } else if (data && data.version === localVersion) {
+                    setSyncStatus('synced');
+                }
+            } catch (_) {}
+        }
+
+        // ─── Init ──────────────────────────────────────────
+        async function init() {
+            const cache = loadLocalCache();
+            if (cache && cache.state) {
+                S = cache.state;
+                localVersion = cache.version || 0;
+                render();
+            } else {
+                S = getDefaultState();
+                localVersion = 0;
+                render();
+            }
+
+            initSupabase();
+            await fullSync();
+
+            if (syncTimer) clearInterval(syncTimer);
+            syncTimer = setInterval(periodicSync, 30000);
+
+            setInterval(() => { checkAlarms(); }, 15000);
+            checkAlarms();
+
+            // countdown updater every second
+            setInterval(updateTodayInfo, 1000);
+
+            document.addEventListener('visibilitychange', () => {
+                if (!document.hidden) periodicSync();
+            });
+
+            window.addEventListener('online', () => {
+                showToast('🌐 Online — syncing…', 1500);
+                fullSync().then(() => render());
+            });
+
+            document.getElementById('syncNowBtn').addEventListener('click', async () => {
+                showToast('🔄 Syncing…', 1000);
+                await fullSync();
+                render();
+                showToast('✅ Sync complete', 1200);
+            });
+
+            console.log('📓 My Diary v3 — Supabase sync enabled');
+            console.log('🔑 Using Supabase project:', SUPABASE_URL);
+        }
+
+        // Override render to update alarm bar
+        const origRender = render;
+        render = function() {
+            origRender();
+            const today = todayISO();
+            let allEvs = [];
+            BUILT_IN_EVENTS.forEach(e => {
+                if (S.deleted && S.deleted[e.id]) return;
+                let ev = Object.assign({}, e);
+                if (S.edits && S.edits[e.id]) ev = Object.assign(ev, S.edits[e.id]);
+                allEvs.push(ev);
+            });
+            (S.custom || []).forEach(e => allEvs.push(Object.assign({}, e)));
+            const todayEvs = allEvs.filter(e => e.date === today && e.time);
+            if (!activeAlarmId) {
+                if (todayEvs.length > 0) {
+                    document.getElementById('alarmBar').classList.add('on');
+                    document.getElementById('alarmDot').classList.remove('ring');
+                    document.getElementById('alarmBarText').textContent =
+                        `🔔 ${todayEvs.length} event${todayEvs.length>1?'s':''} today — alarms active`;
+                } else {
+                    document.getElementById('alarmBar').classList.remove('on');
+                }
+            }
+        };
+
+        init();
+    </script>
 </body>
 </html>
