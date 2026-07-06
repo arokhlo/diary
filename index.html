@@ -162,6 +162,27 @@
             background: var(--accent-light);
             transform: scale(1.05)
         }
+        .prev-btn {
+            background: var(--paper);
+            color: var(--accent);
+            border: 1.5px solid var(--accent);
+            border-radius: 30px;
+            padding: 3px 12px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: .2s;
+            white-space: nowrap
+        }
+        .prev-btn:hover {
+            background: var(--accent-soft);
+            transform: scale(1.05)
+        }
+        .prev-btn.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent)
+        }
         /* ─── TODAY INFO BOX (new) ─── */
         #todayInfo {
             display: flex;
@@ -1107,6 +1128,7 @@
                 <div class="subtitle">Morteza · Mitcham, England</div>
             </div>
             <div class="sync-wrap">
+                <button class="prev-btn" id="prevEventsBtn">📜 Prev Events</button>
                 <span id="syncStatus">☁️ Synced</span>
                 <button class="sync-btn" id="syncNowBtn">🔄 Sync Now</button>
             </div>
@@ -1453,6 +1475,7 @@
         // ─── Get events ────────────────────────────────────
         let activeFilter = 'all';
         let searchQ = '';
+        let showPast = false;
 
         function getAllEvents() {
             const today = todayISO();
@@ -1474,13 +1497,24 @@
                 if (S.notes && S.notes[e.id] !== undefined) e.notes = S.notes[e.id];
             });
 
-            evs = evs.filter(e => e.date > today || e.date === today);
-            evs = evs.filter(e => {
-                if (e.date !== today) return true;
-                if (!e.time) return true;
-                const [h, m] = e.time.split(':').map(Number);
-                return (h * 60 + m) >= nowM;
-            });
+            if (showPast) {
+                evs = evs.filter(e => {
+                    if (e.date < today) return true;
+                    if (e.date === today && e.time) {
+                        const [h, m] = e.time.split(':').map(Number);
+                        return (h * 60 + m) < nowM;
+                    }
+                    return false;
+                });
+            } else {
+                evs = evs.filter(e => e.date > today || e.date === today);
+                evs = evs.filter(e => {
+                    if (e.date !== today) return true;
+                    if (!e.time) return true;
+                    const [h, m] = e.time.split(':').map(Number);
+                    return (h * 60 + m) >= nowM;
+                });
+            }
 
             if (activeFilter && activeFilter !== 'all') {
                 evs = evs.filter(e => e.category === activeFilter);
@@ -1498,9 +1532,13 @@
             }
 
             evs.sort((a, b) => {
-                if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+                if (a.date !== b.date) {
+                    if (showPast) return a.date < b.date ? 1 : -1;
+                    return a.date < b.date ? -1 : 1;
+                }
                 const ta = a.time || '99:99',
                     tb = b.time || '99:99';
+                if (showPast) return ta < tb ? 1 : (ta > tb ? -1 : 0);
                 return ta < tb ? -1 : (ta > tb ? 1 : 0);
             });
 
@@ -1558,7 +1596,7 @@
 
             const timeDisp = e.time || 'All day';
             const catLbl = CAT_LABEL[e.category] || 'Other';
-            const showBell = isToday && !!e.time;
+            const showBell = isToday && !!e.time && !showPast;
             const isSilenced = !!(S.silenced && S.silenced[e.id] && Date.now() < S.silenced[e.id]);
 
             card.innerHTML = `
@@ -1648,8 +1686,14 @@
             const evs = getAllEvents();
 
             if (!evs.length) {
+                const emptyMsg = showPast
+                    ? 'No past appointments found.'
+                    : (searchQ && searchQ.trim() ? 'Try a different search term.' : 'No upcoming appointments. Tap + to add one.');
+                const emptyBig = showPast
+                    ? 'Nothing here yet 🗂'
+                    : (searchQ && searchQ.trim() ? 'No results 🔍' : 'All clear ✨');
                 main.innerHTML =
-                    `<div class="empty"><div class="big">${searchQ&&searchQ.trim()?'No results 🔍':'All clear ✨'}</div>${searchQ&&searchQ.trim()?'Try a different search term.':'No upcoming appointments. Tap + to add one.'}</div>`;
+                    `<div class="empty"><div class="big">${emptyBig}</div>${emptyMsg}</div>`;
             } else {
                 const today = todayISO();
                 const groups = [];
@@ -1768,6 +1812,16 @@
             render();
             searchInput.focus();
         };
+
+        // ─── Prev Events toggle ────────────────────────────
+        document.getElementById('prevEventsBtn').addEventListener('click', () => {
+            showPast = !showPast;
+            const btn = document.getElementById('prevEventsBtn');
+            btn.classList.toggle('active', showPast);
+            btn.textContent = showPast ? '📅 Upcoming Events' : '📜 Prev Events';
+            showToast(showPast ? '📜 Showing past appointments' : '📅 Showing upcoming appointments', 1500);
+            render();
+        });
 
         // ─── Modal ─────────────────────────────────────────
         let editingId = null;
