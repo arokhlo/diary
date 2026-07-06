@@ -81,8 +81,8 @@
         <section class="panel quick">
           <h2 style="font-family:Fraunces,serif;font-weight:700;color:var(--accent);font-size:16px;letter-spacing:-.01em;display:flex;align-items:center;gap:7px"><span style="width:6px;height:6px;border-radius:2px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:inline-block"></span>Quick Add</h2>
           <textarea id="quickText" placeholder="Tomorrow 9am Dentist #medical !high\nFriday 14:30 Job Centre #benefits"></textarea>
-          <div class="hint">Format ساده: <b>2026-07-22 14:00 Dentist #medical !high</b> یا <b>Day after tomorrow 9am Dentist</b>. برای متن‌های Default داخل این کادر، Tab را بزنید؛ Shift+Tab مورد قبلی را می‌آورد.</div>
-          <div class="quick-actions"><button id="quickAddBtn" class="btn primary">Add</button><button id="quickClearBtn" class="btn">Clear</button></div>
+          <div class="hint">Format ساده: <b>2026-07-22 14:00 Dentist #medical !high</b> یا <b>Day after tomorrow 9am Dentist</b>. در لپ‌تاپ Tab و در موبایل دکمه <b>📝 Templates</b> متن‌های Default را یکی‌یکی می‌آورد؛ Shift+Tab مورد قبلی را می‌آورد.</div>
+          <div class="quick-actions"><button id="quickTemplateBtn" class="btn" title="Load a default appointment template">📝 Templates</button><button id="quickAddBtn" class="btn primary">Add</button><button id="quickClearBtn" class="btn">Clear</button></div>
         </section>
       </aside>
       <section class="content">
@@ -107,6 +107,7 @@
     const TABLE_NAME='diary_state';
     const LS_KEY='my-diary-2026-final-cache';
     const SETTINGS_KEY='my-diary-2026-final-settings';
+    const QUICK_TEMPLATE_KEY='my-diary-2026-quick-template-index';
     const BUILT_IN_EVENTS=[
       {id:'b1',date:'2026-06-16',time:'16:10',duration:'20 min',category:'benefits',priority:'medium',title:'Job Centre – Universal Credit Appointment',subtitle:null,notes:'Bring UC journal & ID',tags:['UC','JobCentre']},
       {id:'b2',date:'2026-06-16',time:'16:00',duration:'1 hr',category:'education',priority:'medium',title:'Teams Meeting – Intro to Skills Connected',subtitle:'Modern Data Engineering with AI',notes:'Online via Microsoft Teams',tags:['AI','Course']},
@@ -244,14 +245,24 @@
       return `${e.date} ${e.time||''} ${e.title} #${e.category} !${e.priority||'medium'}`.replace(/\s+/g,' ').trim()
     }
     const QUICK_TEMPLATES=BUILT_IN_EVENTS.map(templateFromEvent);
-    let quickTemplateIndex=-1;
-    function useQuickTemplate(backwards=false){
+    let quickTemplateIndex=Number(localStorage.getItem(QUICK_TEMPLATE_KEY)??'-1');
+    if(!Number.isFinite(quickTemplateIndex))quickTemplateIndex=-1;
+    function quickTextIsDirty(){
+      const v=$('quickText').value.trim();
+      return v && !QUICK_TEMPLATES.includes(v);
+    }
+    function useQuickTemplate(backwards=false,force=false){
       if(!QUICK_TEMPLATES.length)return;
+      if(quickTextIsDirty()&&!force){
+        const ok=confirm('Quick Add has text already. Replace it with a Default template?');
+        if(!ok)return;
+      }
       quickTemplateIndex=(quickTemplateIndex+(backwards?-1:1)+QUICK_TEMPLATES.length)%QUICK_TEMPLATES.length;
+      localStorage.setItem(QUICK_TEMPLATE_KEY,String(quickTemplateIndex));
       $('quickText').value=QUICK_TEMPLATES[quickTemplateIndex];
       $('quickText').focus();
       $('quickText').setSelectionRange(0,$('quickText').value.length);
-      toast('Default text loaded. Edit it, then Add.')
+      toast(`Default ${quickTemplateIndex+1}/${QUICK_TEMPLATES.length} loaded. Edit it, then Add.`)
     }
     function quickAdd(){const ev=parseQuick($('quickText').value);if(!ev){toast('Quick Add is empty');return}mutate(s=>s.custom.push(ev),'Quick event added');$('quickText').value=''}
     function exportData(type='json'){const ev=allRaw();let name='morteza-diary-2026.'+type, mime='text/plain', content='';if(type==='json'){mime='application/json';content=JSON.stringify({events:ev,state:S,exported_at:new Date().toISOString()},null,2)}if(type==='csv'){mime='text/csv';content='date,time,duration,category,priority,title,subtitle,notes,tags,done\n'+ev.map(e=>[e.date,e.time||'',e.duration||'',e.category,e.priority,e.title,e.subtitle||'',(e.notes||'').replace(/\n/g,' '),(e.tags||[]).join('|'),!!S.done[e.id]].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n')}if(type==='ics'){mime='text/calendar';content='BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Morteza Diary//Final//EN\n'+ev.map(e=>{const dt=e.date.replaceAll('-','')+(e.time?'T'+e.time.replace(':','')+'00':'');return`BEGIN:VEVENT\nUID:${e.id}@morteza-diary\nDTSTAMP:${new Date().toISOString().replace(/[-:]/g,'').split('.')[0]}Z\nDTSTART:${dt}\nSUMMARY:${e.title.replace(/\n/g,' ')}\nDESCRIPTION:${(e.notes||'').replace(/\n/g,' ')}\nEND:VEVENT`}).join('\n')+'\nEND:VCALENDAR'}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:mime}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Exported '+type.toUpperCase())}
@@ -264,7 +275,7 @@
     function boot(){initSettings();requestNotifyPermission();const c=loadLocal();if(c?.state){S=normaliseState(c.state);localVersion=c.version||0}else S=normaliseState(S);render();fullSync();checkAlarms();setInterval(()=>{renderTodayInfo();checkAlarms()},15000)}
     $('alertsBtn').onclick=()=>{unlockAudioOnce();playBeep(.25,880,0);if('Notification' in window){if(Notification.permission==='granted'){notifyDevice('Alerts are on','The diary will ring from 10 minutes before the appointment while this page is open.',false);toast('🔔 Sound + notifications enabled on this device')}else{Notification.requestPermission().then(p=>{toast(p==='granted'?'🔔 Notifications enabled on this device':'Sound is on, but notifications were blocked in the browser')})}}else{toast('🔔 Sound enabled on this device (notifications not supported here)')}};
     $('wakeBtn').onclick=()=>{unlockAudioOnce();wakeLock?releaseWakeLock():requestWakeLock().then(ok=>{if(ok)toast('💡 Screen-awake mode on. Keep this diary open on each device.')})};
-    $('themeBtn').onclick=toggleTheme;$('syncBtn').onclick=()=>fullSync();$('exportBtn').onclick=exportMenu;$('prevBtn').onclick=()=>{showPast=!showPast;$('prevBtn').innerHTML=showPast?'📅 <span class="txt">Upcoming</span>':'📜 <span class="txt">Past</span>';render()};$('listTab').onclick=()=>{view='list';render()};$('calTab').onclick=()=>{view='calendar';render()};$('searchInput').oninput=()=>{searchQ=$('searchInput').value;$('clearSearch').classList.toggle('on',!!searchQ.trim());render()};$('clearSearch').onclick=()=>{$('searchInput').value='';searchQ='';$('clearSearch').classList.remove('on');render()};$('todayBtn').onclick=()=>{view='list';showPast=false;render();setTimeout(()=>document.getElementById('d-'+todayISO())?.scrollIntoView({behavior:'smooth',block:'start'}),50)};$('newBtnTop').onclick=openAdd;$('addBtn').onclick=openAdd;$('cancelBtn').onclick=()=>$('modalBack').classList.remove('open');$('modalBack').onclick=e=>{if(e.target===$('modalBack'))$('modalBack').classList.remove('open')};$('saveBtn').onclick=saveForm;$('quickText').addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();useQuickTemplate(e.shiftKey)}});$('quickAddBtn').onclick=quickAdd;$('quickClearBtn').onclick=()=>$('quickText').value='';$('alarmStop').onclick=stopAlarm;document.querySelectorAll('.bottomnav button').forEach(b=>b.onclick=()=>{if(b.dataset.view){view=b.dataset.view;render()}if(b.dataset.action==='add')openAdd();if(b.dataset.action==='search')$('searchInput').focus()});document.addEventListener('keydown',e=>{if(e.key==='/'&&!/input|textarea/i.test(document.activeElement.tagName)){e.preventDefault();$('searchInput').focus()}if(e.key.toLowerCase()==='n'&&!/input|textarea/i.test(document.activeElement.tagName))openAdd();if(e.key==='Escape'){$('modalBack').classList.remove('open');$('alarmOverlay').classList.remove('on')}});boot();
+    $('themeBtn').onclick=toggleTheme;$('syncBtn').onclick=()=>fullSync();$('exportBtn').onclick=exportMenu;$('prevBtn').onclick=()=>{showPast=!showPast;$('prevBtn').innerHTML=showPast?'📅 <span class="txt">Upcoming</span>':'📜 <span class="txt">Past</span>';render()};$('listTab').onclick=()=>{view='list';render()};$('calTab').onclick=()=>{view='calendar';render()};$('searchInput').oninput=()=>{searchQ=$('searchInput').value;$('clearSearch').classList.toggle('on',!!searchQ.trim());render()};$('clearSearch').onclick=()=>{$('searchInput').value='';searchQ='';$('clearSearch').classList.remove('on');render()};$('todayBtn').onclick=()=>{view='list';showPast=false;render();setTimeout(()=>document.getElementById('d-'+todayISO())?.scrollIntoView({behavior:'smooth',block:'start'}),50)};$('newBtnTop').onclick=openAdd;$('addBtn').onclick=openAdd;$('cancelBtn').onclick=()=>$('modalBack').classList.remove('open');$('modalBack').onclick=e=>{if(e.target===$('modalBack'))$('modalBack').classList.remove('open')};$('saveBtn').onclick=saveForm;$('quickText').addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();useQuickTemplate(e.shiftKey)}});$('quickTemplateBtn').onclick=()=>useQuickTemplate(false);$('quickAddBtn').onclick=quickAdd;$('quickClearBtn').onclick=()=>$('quickText').value='';$('alarmStop').onclick=stopAlarm;document.querySelectorAll('.bottomnav button').forEach(b=>b.onclick=()=>{if(b.dataset.view){view=b.dataset.view;render()}if(b.dataset.action==='add')openAdd();if(b.dataset.action==='search')$('searchInput').focus()});document.addEventListener('keydown',e=>{if(e.key==='/'&&!/input|textarea/i.test(document.activeElement.tagName)){e.preventDefault();$('searchInput').focus()}if(e.key.toLowerCase()==='n'&&!/input|textarea/i.test(document.activeElement.tagName))openAdd();if(e.key==='Escape'){$('modalBack').classList.remove('open');$('alarmOverlay').classList.remove('on')}});boot();
   </script>
 </body>
 </html>
