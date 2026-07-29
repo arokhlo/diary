@@ -165,9 +165,88 @@
     function loadLocal(){try{return JSON.parse(localStorage.getItem(LS_KEY)||'null')}catch{return null}}
     function setStatus(cls,msg){const el=$('syncStatus');el.className='status '+(cls||'');el.textContent=msg}
     function initSupabase(){try{if(window.supabase){supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON);return true}}catch(e){console.warn(e)}return false}
+    // Merge remote + local instead of blindly overwriting, so a stale device can never erase
+    // appointments that another device already saved to the cloud.
+    function mergeStates(remote,local){
+      const merged=normaliseState(JSON.parse(JSON.stringify(remote||getDefaultState())));
+      const byId={};
+      (merged.custom||[]).forEach(e=>{if(e&&e.id)byId[e.id]=e});
+      (local.custom||[]).forEach(e=>{if(e&&e.id)byId[e.id]=e}); // local edits/additions win on conflict
+      merged.custom=Object.values(byId);
+      ['edits','notes','done','deleted','silenced'].forEach(k=>{merged[k]={...(merged[k]||{}),...(local[k]||{})}});
+      return merged;
+    }
+    let pendingCloudSave=false, realtimeChannel=null;
     async function loadCloud(){if(!supabase)return false;try{setStatus('syncing','🔄 Loading');const {data,error}=await supabase.from(TABLE_NAME).select('*').eq('id','main').maybeSingle();if(error)throw error;if(data){S=normaliseState(data.data);localVersion=data.version||0;saveLocal();setStatus('', '☁️ Synced');return true}return null}catch(e){setStatus('error','⚠️ Offline');return false}}
-    async function saveCloud(force=false){if(!supabase||syncing&&!force)return false;syncing=true;try{setStatus('syncing','🔄 Saving');const version=localVersion+1;const payload={id:'main',data:S,version,updated_at:new Date().toISOString()};const {data,error}=await supabase.from(TABLE_NAME).upsert(payload,{onConflict:'id'}).select().single();if(error)throw error;localVersion=data?.version||version;saveLocal();setStatus('', '☁️ Synced');return true}catch(e){saveLocal();setStatus('error','⚠️ Local only');return false}finally{syncing=false}}
-    async function fullSync(){if(!supabase)initSupabase();const r=await loadCloud();if(r===null){saveLocal();await saveCloud(true)}else if(r===false){const c=loadLocal();if(c?.state){S=normaliseState(c.state);localVersion=c.version||0;toast('Offline cache loaded')}}render()}
+    async function saveCloud(force=false){
+      if(!supabase||(syncing&&!force))return false;
+      syncing=true;
+      try{
+        setStatus('syncing','🔄 Saving');
+        // Pull the latest cloud row first and merge, so we never overwrite appointments
+        // that another device already saved after our last sync.
+        const {data:remoteRow,error:selErr}=await supabase.from(TABLE_NAME).select('*').eq('id','main').maybeSingle();
+        if(selErr)throw selErr;
+        if(remoteRow&&(remoteRow.version||0)>localVersion){
+          S=mergeStates(remoteRow.data,S);
+          localVersion=remoteRow.version;
+        }
+        const version=localVersion+1;
+        const payload={id:'main',data:S,version,updated_at:new Date().toISOString()};
+        const {data,error}=await supabase.from(TABLE_NAME).upsert(payload,{onConflict:'id'}).select().single();
+        if(error)throw error;
+        localVersion=data?.version||version;
+        saveLocal();
+        setStatus('', '☁️ Synced');
+        pendingCloudSave=false;
+        render();
+        return true;
+      }catch(e){
+        console.warn('saveCloud failed',e);
+        saveLocal();
+        setStatus('error','⚠️ Local only — retrying');
+        pendingCloudSave=true;
+        return false;
+      }finally{
+        syncing=false;
+      }
+    }
+    function subscribeRealtime(){
+      if(!supabase||realtimeChannel)return;
+      try{
+        realtimeChannel=supabase.channel('diary-state-changes')
+          .on('postgres_changes',{event:'*',schema:'public',table:TABLE_NAME,filter:'id=eq.main'},payload=>{
+            const row=payload.new;
+            if(!row||syncing)return;
+            if((row.version||0)>localVersion){
+              S=mergeStates(row.data,S);
+              localVersion=row.version;
+              saveLocal();render();
+              toast('🔄 New update received from another device');
+            }
+          })
+          .subscribe();
+      }catch(e){console.warn('realtime subscribe failed',e)}
+    }
+    async function fullSync(){if(!supabase)initSupabase();const r=await loadCloud();if(r===null){saveLocal();await saveCloud(true)}else if(r===false){const c=loadLocal();if(c?.state){S=normaliseState(c.state);localVersion=c.version||0;toast('Offline cache loaded')}}subscribeRealtime();render()}
+    // Fallback poll: covers the case where Supabase Realtime isn't enabled on the table,
+    // or the realtime socket silently drops — still guarantees other devices pick up
+    // new appointments within ~20 seconds even without pressing Sync.
+    setInterval(async()=>{
+      if(!supabase||syncing)return;
+      try{
+        const {data,error}=await supabase.from(TABLE_NAME).select('version,data').eq('id','main').maybeSingle();
+        if(error||!data)return;
+        if((data.version||0)>localVersion){
+          S=mergeStates(data.data,S);
+          localVersion=data.version;
+          saveLocal();render();
+          toast('🔄 New update received from another device');
+        }
+      }catch(e){}
+      if(pendingCloudSave&&navigator.onLine)saveCloud(true);
+    },20000);
+    window.addEventListener('online',()=>{if(pendingCloudSave)saveCloud(true)});
     function mutate(fn,msg,opt={}){const old=JSON.stringify(S);fn(S);S=normaliseState(S);if(JSON.stringify(S)!==old){saveLocal();saveCloud();render();if(msg)toast(msg, opt.dur||1800, opt.undo)}}
     function allRaw(){let ev=[];BUILT_IN_EVENTS.forEach(e=>{if(!S.deleted[e.id])ev.push({...e,...(S.edits[e.id]||{}),custom:false})});(S.custom||[]).forEach(e=>ev.push({...e,custom:true}));ev.forEach(e=>{if(S.notes[e.id]!==undefined)e.notes=S.notes[e.id];e.priority=e.priority||'medium';e.tags=Array.isArray(e.tags)?e.tags:[]});return ev}
     function isPastEvent(e){const t=todayISO();if(e.date<t)return true;if(e.date===t&&e.time){const [h,m]=e.time.split(':').map(Number);return h*60+m<nowMinutes()}return false}
