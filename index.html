@@ -48,6 +48,8 @@
         <div class="toolbar">
           <span id="syncStatus" class="status">☁️ Synced</span>
           <button id="alertsBtn" class="btn" title="Enable sound + notifications on this device">🔔 <span class="txt">Alerts</span></button>
+          <button id="emailSettingsBtn" class="btn" title="Set the email address for 2-hour reminder emails">✉️ <span class="txt">Email</span></button>
+          <button id="edgeFnBtn" class="btn" title="View / copy the Supabase Edge Function code that sends the reminder emails">🧩 <span class="txt">Reminder Code</span></button>
           <button id="wakeBtn" class="btn" title="Keep the screen awake while this diary is open">💡 <span class="txt">Wake</span></button>
           <button id="themeBtn" class="btn" title="Dark mode">🌙 <span class="txt">Theme</span></button>
           <button id="syncBtn" class="btn">🔄 <span class="txt">Sync</span></button>
@@ -72,8 +74,14 @@
       <aside class="sidebar">
         <section class="panel quick">
           <h2 style="font-family:Fraunces,serif;font-weight:700;color:var(--accent);font-size:16px;letter-spacing:-.01em;display:flex;align-items:center;gap:7px"><span style="width:6px;height:6px;border-radius:2px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:inline-block"></span>Quick Add</h2>
+          <div id="quickDayChips" class="chips" style="overflow:visible;flex-wrap:wrap;padding-top:0;margin-bottom:8px">
+            <button type="button" class="chip" data-word="Today">امروز · Today</button>
+            <button type="button" class="chip" data-word="Tomorrow">فردا · Tomorrow</button>
+            <button type="button" class="chip" data-word="Day after tomorrow">پس‌فردا · Day after tomorrow</button>
+            <button type="button" class="chip" data-word="Day after day after tomorrow">پس‌پس‌فردا · Day after day after tomorrow</button>
+          </div>
           <textarea id="quickText" placeholder="Tomorrow 9am Dentist #medical !high\nFriday 14:30 Job Centre #benefits"></textarea>
-          <div class="hint">Format ساده: <b>2026-07-22 14:00 Dentist #medical !high</b> یا <b>Day after tomorrow 9am Dentist</b>. در لپ‌تاپ Tab و در موبایل دکمه <b>📝 Templates</b> متن‌های Default را یکی‌یکی می‌آورد؛ Shift+Tab مورد قبلی را می‌آورد. دکمه <b>📋 CopyText</b> روی هر Event متن همان Event را اینجا می‌گذارد.</div>
+          <div class="hint">Format ساده: <b>2026-07-22 14:00 Dentist #medical !high</b> یا <b>Day after tomorrow 9am Dentist</b>. روی دکمه‌های بالا (امروز/فردا/پس‌فردا/پس‌پس‌فردا) بزنید تا همون کلمه اول متن نوشته بشه، بعد بقیه‌ی جزئیات appointment را کنارش تایپ کنید. در لپ‌تاپ Tab و در موبایل دکمه <b>📝 Templates</b> متن‌های Default را یکی‌یکی می‌آورد؛ Shift+Tab مورد قبلی را می‌آورد. دکمه <b>📋 CopyText</b> روی هر Event متن همان Event را اینجا می‌گذارد.</div>
           <div class="quick-actions"><button id="quickTemplateBtn" class="btn" title="Load a default appointment template">📝 Templates</button><button id="quickAddBtn" class="btn primary">Add</button><button id="quickClearBtn" class="btn">Clear</button></div>
         </section>
       </aside>
@@ -88,6 +96,7 @@
   <nav class="bottomnav"><button data-view="list" class="active">List</button><button data-view="calendar">Calendar</button><button data-action="add">Add</button><button data-action="search">Search</button></nav>
 
   <div id="modalBack" class="modalback"><div class="modal"><div class="handle"></div><h2 id="modalTitle">New Appointment</h2><div class="fields"><div class="field"><label>Date</label><input id="fDate" type="date"></div><div class="field"><label>Time</label><input id="fTime" type="time"></div></div><div class="fields"><div class="field"><label>Duration</label><input id="fDuration" placeholder="30 min"></div><div class="field"><label>Category</label><select id="fCategory"><option value="work">Work</option><option value="education">Education</option><option value="medical">Medical</option><option value="benefits">Benefits</option><option value="other">Other</option></select></div></div><div class="fields"><div class="field"><label>Priority</label><select id="fPriority"><option value="low">Low</option><option value="medium" selected>Medium</option><option value="high">High</option></select></div><div class="field"><label>Tags</label><input id="fTags" placeholder="NHS, AI, JobCentre"></div></div><div class="field"><label>Title</label><input id="fTitle" placeholder="Dentist appointment"></div><div class="field"><label>Subtitle</label><input id="fSubtitle" placeholder="Optional"></div><div class="field"><label>Notes</label><textarea id="fNotes" rows="3" placeholder="Optional notes…"></textarea></div>
+        <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink);margin-top:10px"><input id="fImportant" type="checkbox" style="width:auto"> ⭐ Important — email me a reminder 2 hours before</label>
       <div id="repeatBox" class="field" style="border:1px solid var(--line);border-radius:18px;padding:12px;background:var(--bg)">
         <label style="display:flex;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink)"><input id="fRepeat" type="checkbox" style="width:auto"> Repeat weekly / تکرار هفتگی</label>
         <div id="repeatFields" style="display:none;margin-top:12px">
@@ -98,6 +107,152 @@
           <div class="hint" style="font-size:11px;color:var(--muted);line-height:1.45">مثال: Date را اولین تاریخ بگذار، Time را 13:00، Duration را 3 hrs، Friday را انتخاب کن و Repeat for را 2 بگذار. برنامه هر جمعه برای دو ماه ساخته می‌شود. عجیب است، ولی بالاخره تقویم باید کار کند.</div>
         </div>
       </div><div class="modalactions"><button id="cancelBtn" class="btn">Cancel</button><button id="saveBtn" class="btn primary">💾 Save</button></div></div></div>
+
+  <div id="edgeFnModalBack" class="modalback">
+    <div class="modal" style="max-width:820px">
+      <div class="handle"></div>
+      <h2 style="font-size:22px">🧩 Reminder Email — Edge Function</h2>
+      <p style="color:var(--muted);font-size:13px;line-height:1.6;margin-bottom:12px">
+        This is the Supabase Edge Function that sends you an email 2 hours before any appointment marked <b>⭐ Important</b>.
+        It's bundled here so this diary is a single HTML file — you don't need a separate <code>.ts</code> file.
+        To deploy it: Supabase Dashboard → <b>Edge Functions</b> → <b>Create function</b> named <code>send-reminders</code>,
+        paste the code below, add the <code>RESEND_API_KEY</code> secret, then schedule it to run every 10 minutes via
+        <b>Integrations → Cron</b>.
+      </p>
+      <div style="position:relative">
+        <button id="edgeFnCopyBtn" class="btn primary" style="position:absolute;top:10px;right:10px;z-index:2">📋 Copy code</button>
+        <pre id="edgeFnPre" style="background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:16px;padding-top:52px;overflow:auto;max-height:55vh;font-size:11.5px;line-height:1.55;white-space:pre;font-family:'IBM Plex Mono',monospace"></pre>
+      </div>
+      <div class="modalactions"><button id="edgeFnCloseBtn" class="btn">Close</button></div>
+    </div>
+  </div>
+
+  <script type="text/plain" id="edgeFnSource">// Supabase Edge Function: send-reminders
+// Sends an email 2 hours before any appointment marked "⭐ Important" in the diary app.
+// Deploy this via the Supabase Dashboard (Edge Functions -> Create function) and
+// schedule it to run every 10 minutes via Dashboard -> Integrations -> Cron.
+//
+// Required secrets (Dashboard -> Edge Functions -> send-reminders -> Secrets, or
+// Project Settings -> Edge Functions -> Secrets):
+//   RESEND_API_KEY      - your Resend API key (https://resend.com)
+//   REMINDER_FROM_EMAIL  - optional, defaults to 'onboarding@resend.dev'
+//
+// SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are provided automatically by the
+// platform - you do not need to set them yourself.
+
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
+
+const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
+const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY');
+const FROM_EMAIL = Deno.env.get('REMINDER_FROM_EMAIL') || 'onboarding@resend.dev';
+const TABLE_NAME = 'diary_state';
+
+// The cron job should run roughly every 10 minutes. This window (110-130 min
+// before the appointment) makes sure every appointment gets exactly one email
+// even if a run is occasionally a few minutes late or early.
+const WINDOW_MIN = 110;
+const WINDOW_MAX = 130;
+
+Deno.serve(async (_req) => {
+  try {
+    if (!RESEND_API_KEY) {
+      return new Response('RESEND_API_KEY secret is not set', { status: 200 });
+    }
+
+    const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
+    const { data: row, error } = await supabase
+      .from(TABLE_NAME)
+      .select('*')
+      .eq('id', 'main')
+      .maybeSingle();
+    if (error) throw error;
+    if (!row) return new Response('no diary_state row found', { status: 200 });
+
+    const state = row.data || {};
+    const custom = Array.isArray(state.custom) ? state.custom : [];
+    const emailSent = { ...(state.emailSent || {}) };
+    const notifyEmail = state.settings?.notifyEmail;
+
+    if (!notifyEmail) {
+      return new Response('no notify email configured in the app yet', { status: 200 });
+    }
+
+    const now = Date.now();
+    const due = custom.filter((ev: any) => {
+      if (!ev || !ev.important || !ev.time || !ev.date) return false;
+      if (emailSent[ev.id]) return false;
+      const target = new Date(`${ev.date}T${ev.time}:00`).getTime();
+      if (Number.isNaN(target)) return false;
+      const diffMin = (target - now) / 60000;
+      return diffMin >= WINDOW_MIN && diffMin <= WINDOW_MAX;
+    });
+
+    let sentCount = 0;
+    for (const ev of due) {
+      const subject = `⏰ Reminder: ${ev.title} in about 2 hours`;
+      const html = `
+        <div style="font-family:sans-serif;line-height:1.5">
+          <h2 style="margin:0 0 8px">⏰ ${escapeHtml(ev.title)}</h2>
+          <p style="margin:0 0 4px"><b>${escapeHtml(ev.date)} at ${escapeHtml(ev.time)}</b>${ev.duration ? ' · ' + escapeHtml(ev.duration) : ''}</p>
+          ${ev.subtitle ? `<p style="margin:0 0 4px">${escapeHtml(ev.subtitle)}</p>` : ''}
+          ${ev.notes ? `<p style="margin:8px 0 0;color:#555">${escapeHtml(ev.notes)}</p>` : ''}
+          <p style="margin-top:16px;color:#999;font-size:12px">Sent automatically by your Diary app.</p>
+        </div>`;
+
+      const resp = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ from: FROM_EMAIL, to: notifyEmail, subject, html }),
+      });
+
+      if (resp.ok) {
+        emailSent[ev.id] = new Date().toISOString();
+        sentCount++;
+      } else {
+        console.error('Resend send failed for', ev.id, await resp.text());
+      }
+    }
+
+    if (sentCount > 0) {
+      // Re-read the latest row right before writing back, and merge, so we never
+      // clobber appointments/settings saved by the app in the meantime.
+      const { data: latest } = await supabase
+        .from(TABLE_NAME)
+        .select('*')
+        .eq('id', 'main')
+        .maybeSingle();
+      const latestData = latest?.data || state;
+      const mergedEmailSent = { ...(latestData.emailSent || {}), ...emailSent };
+      const newData = { ...latestData, emailSent: mergedEmailSent };
+      const version = (latest?.version || row.version || 0) + 1;
+      await supabase
+        .from(TABLE_NAME)
+        .upsert(
+          { id: 'main', data: newData, version, updated_at: new Date().toISOString() },
+          { onConflict: 'id' },
+        );
+    }
+
+    return new Response(JSON.stringify({ checked: custom.length, sent: sentCount }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (e) {
+    console.error(e);
+    return new Response(String(e), { status: 500 });
+  }
+});
+
+function escapeHtml(s: string) {
+  return String(s ?? '').replace(/[&<>"']/g, (m) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m] as string),
+  );
+}
+</script>
 
   <div id="alarmOverlay" class="alarmoverlay"><div class="alarmbell">🔔</div><h2 id="alarmTitle">Appointment</h2><p id="alarmSub">It is time.</p><button id="alarmStop" class="btn">Stop alarm</button></div>
   <div id="toast" class="toast"></div>
@@ -158,8 +313,8 @@
     function iso(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
     function nowMinutes(){const d=new Date();return d.getHours()*60+d.getMinutes()}
     function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
-    function getDefaultState(){return{done:{},notes:{},custom:[],deleted:{},edits:{},silenced:{}}}
-    function normaliseState(x){const d=getDefaultState();return Object.assign(d,x||{}, {custom:Array.isArray(x?.custom)?x.custom:[]})}
+    function getDefaultState(){return{done:{},notes:{},custom:[],deleted:{},edits:{},silenced:{},emailSent:{},settings:{notifyEmail:''}}}
+    function normaliseState(x){const d=getDefaultState();return Object.assign(d,x||{}, {custom:Array.isArray(x?.custom)?x.custom:[], settings:{...d.settings,...(x&&x.settings||{})}, emailSent:(x&&x.emailSent)||{}})}
     function toast(msg,dur=2400,undo=false){const t=$('toast');t.innerHTML=esc(msg)+(undo?' <button id="undoBtn">Undo</button>':'');t.classList.add('show');clearTimeout(t._t);if(undo)$('undoBtn').onclick=()=>{t.classList.remove('show');if(undoAction)undoAction()};t._t=setTimeout(()=>t.classList.remove('show'),dur)}
     function saveLocal(){localStorage.setItem(LS_KEY,JSON.stringify({state:S,version:localVersion,timestamp:Date.now()}))}
     function loadLocal(){try{return JSON.parse(localStorage.getItem(LS_KEY)||'null')}catch{return null}}
@@ -173,7 +328,8 @@
       (merged.custom||[]).forEach(e=>{if(e&&e.id)byId[e.id]=e});
       (local.custom||[]).forEach(e=>{if(e&&e.id)byId[e.id]=e}); // local edits/additions win on conflict
       merged.custom=Object.values(byId);
-      ['edits','notes','done','deleted','silenced'].forEach(k=>{merged[k]={...(merged[k]||{}),...(local[k]||{})}});
+      ['edits','notes','done','deleted','silenced','emailSent'].forEach(k=>{merged[k]={...(merged[k]||{}),...(local[k]||{})}});
+      merged.settings={...(merged.settings||{}),...(local.settings||{})};
       return merged;
     }
     let pendingCloudSave=false, realtimeChannel=null;
@@ -256,7 +412,7 @@
     function dateLabel(isoDate){const t=todayISO();const d=parseISO(t);d.setDate(d.getDate()+1);const tm=iso(d);if(isoDate===t)return'Today';if(isoDate===tm)return'Tomorrow';return''}
     function renderDashboard(){/* Dashboard statistics removed for a cleaner compact view. */}
     function renderTodayInfo(){const now=new Date();$('persianDate').textContent=now.toLocaleDateString('fa-IR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});$('englishDate').textContent=now.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'});$('todayBadge').textContent=allRaw().filter(e=>e.date===todayISO()).length+' today';const upcoming=allRaw().filter(e=>!isPastEvent(e)&&e.time).sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time))[0];if(!upcoming){$('nextTitle').textContent='No upcoming timed event';$('nextSub').textContent='Enjoy the suspicious silence.';$('countdown').textContent='—';return}const target=parseISO(upcoming.date);const[h,m]=upcoming.time.split(':').map(Number);target.setHours(h,m,0,0);const diff=Math.max(0,Math.floor((target-new Date())/1000));const d=Math.floor(diff/86400),hr=Math.floor(diff%86400/3600),min=Math.floor(diff%3600/60);$('nextTitle').textContent=upcoming.title;$('nextSub').textContent=`${upcoming.date} · ${upcoming.time} · ${CAT_LABEL[upcoming.category]}`;$('countdown').textContent=(d?d+'d ':'')+(hr?hr+'h ':'')+min+'m'}
-    function eventHTML(e){const done=!!S.done[e.id],today=e.date===todayISO(),sil=S.silenced[e.id]&&Date.now()<S.silenced[e.id],ring=activeAlarmId===e.id&&!sil;return `<article class="event ${today?'today':''} ${done?'done':''} priority-${esc(e.priority)} ${ring?'ringing':''}" data-event="${e.id}"><div class="eventin"><button class="check ${done?'checked':''}" data-act="done" data-id="${e.id}">${done?'✓':''}</button><div><div class="meta"><span class="time">${esc(e.time||'All day')}</span>${e.duration?`<span class="duration">${esc(e.duration)}</span>`:''}<span class="cat cat-${esc(e.category)}">${esc(CAT_LABEL[e.category]||'Other')}</span><span class="priority">!${esc(e.priority)}</span></div><div class="title">${esc(e.title)}</div>${e.subtitle?`<div class="subtitle">${esc(e.subtitle)}</div>`:''}${e.flag?`<div class="subtitle" style="background:var(--danger-soft);color:var(--danger)">⚠ ${esc(e.flag)}</div>`:''}${(e.tags||[]).length?`<div class="meta" style="margin-top:8px">${e.tags.map(t=>`<span class="priority">#${esc(t)}</span>`).join('')}</div>`:''}<textarea class="notes" data-note="${e.id}" placeholder="Add a note…">${esc(e.notes||'')}</textarea></div><div class="actions"><button class="iconbtn" title="Alarm" data-act="bell" data-id="${e.id}">${sil?'🔕':'🔔'}</button><button class="iconbtn" title="CopyText" data-act="copytext" data-id="${e.id}">📋</button><button class="iconbtn" title="Edit" data-act="edit" data-id="${e.id}">✎</button><button class="iconbtn" title="Delete" data-act="del" data-id="${e.id}">⌫</button></div></div></article>`}
+    function eventHTML(e){const done=!!S.done[e.id],today=e.date===todayISO(),sil=S.silenced[e.id]&&Date.now()<S.silenced[e.id],ring=activeAlarmId===e.id&&!sil;return `<article class="event ${today?'today':''} ${done?'done':''} priority-${esc(e.priority)} ${ring?'ringing':''}" data-event="${e.id}"><div class="eventin"><button class="check ${done?'checked':''}" data-act="done" data-id="${e.id}">${done?'✓':''}</button><div><div class="meta"><span class="time">${esc(e.time||'All day')}</span>${e.duration?`<span class="duration">${esc(e.duration)}</span>`:''}<span class="cat cat-${esc(e.category)}">${esc(CAT_LABEL[e.category]||'Other')}</span><span class="priority">!${esc(e.priority)}</span>${e.important?'<span class="priority" style="background:var(--gold-soft);color:#8B6500;border-color:var(--gold)">⭐ 2h email</span>':''}</div><div class="title">${esc(e.title)}</div>${e.subtitle?`<div class="subtitle">${esc(e.subtitle)}</div>`:''}${e.flag?`<div class="subtitle" style="background:var(--danger-soft);color:var(--danger)">⚠ ${esc(e.flag)}</div>`:''}${(e.tags||[]).length?`<div class="meta" style="margin-top:8px">${e.tags.map(t=>`<span class="priority">#${esc(t)}</span>`).join('')}</div>`:''}<textarea class="notes" data-note="${e.id}" placeholder="Add a note…">${esc(e.notes||'')}</textarea></div><div class="actions"><button class="iconbtn" title="Alarm" data-act="bell" data-id="${e.id}">${sil?'🔕':'🔔'}</button><button class="iconbtn" title="CopyText" data-act="copytext" data-id="${e.id}">📋</button><button class="iconbtn" title="Edit" data-act="edit" data-id="${e.id}">✎</button><button class="iconbtn" title="Delete" data-act="del" data-id="${e.id}">⌫</button></div></div></article>`}
     function renderList(){const ev=filteredEvents();$('viewTitle').textContent=showPast?'Past appointments':'Upcoming appointments';if(!ev.length){$('mainView').innerHTML='<div class="panel empty"><b>No appointments found</b><span>Search/filter result is empty. Stunningly peaceful, possibly suspicious.</span></div>';return}let groups=[];ev.forEach(e=>{let g=groups.find(x=>x.date===e.date);if(!g){g={date:e.date,items:[]};groups.push(g)}g.items.push(e)});$('mainView').innerHTML=groups.map(g=>{const d=parseISO(g.date),lbl=dateLabel(g.date);return `<section class="day-group" id="d-${g.date}"><aside class="day-tab ${g.date===todayISO()?'today':''}"><div class="holes"><i></i><i></i></div><div class="num">${d.getDate()}</div><div class="mon">${MONTHS[d.getMonth()]}</div><div class="wday">${WDAYS[d.getDay()].slice(0,3)}</div>${lbl?`<div class="tag">${lbl}</div>`:''}</aside><div class="cards">${g.items.map(eventHTML).join('')}</div></section>`}).join('')}
     function renderCalendar(){const base=parseISO(todayISO());base.setDate(1);const start=new Date(base);start.setDate(1-base.getDay());const month=base.getMonth();const ev=filteredEvents();let html='<div class="calendar">'+['SUN','MON','TUE','WED','THU','FRI','SAT'].map(d=>`<div class="cal-head">${d}</div>`).join('');for(let i=0;i<42;i++){const d=new Date(start);d.setDate(start.getDate()+i);const id=iso(d),items=ev.filter(e=>e.date===id).slice(0,3);html+=`<div class="calday ${id===todayISO()?'today':''} ${d.getMonth()!==month?'muted':''}" data-jump="${id}"><div class="calnum">${d.getDate()}</div><div class="calitems">${items.map(e=>`<div class="calitem">${esc(e.time||'•')} ${esc(e.title)}</div>`).join('')}</div></div>`}html+='</div>';$('viewTitle').textContent='Month view · '+base.toLocaleDateString('en-GB',{month:'long',year:'numeric'});$('mainView').innerHTML=html;document.querySelectorAll('[data-jump]').forEach(x=>x.onclick=()=>{view='list';setViewButtons();render();setTimeout(()=>document.getElementById('d-'+x.dataset.jump)?.scrollIntoView({behavior:'smooth',block:'start'}),50)})}
     function render(){renderChips();renderDashboard();renderTodayInfo();setViewButtons();view==='calendar'?renderCalendar():renderList();bindDynamic()}
@@ -272,8 +428,8 @@
       mutate(s=>{if(e.custom)s.custom=s.custom.filter(x=>x.id!==id);else{s.deleted[id]=true;delete s.edits[id]}delete s.notes[id];delete s.done[id]},'Appointment deleted successfully', {undo:true,dur:5000})
     }
     function handleAction(act,id){const e=findEvent(id);if(!e)return;if(act==='done')mutate(s=>{s.done[id]=!s.done[id]},S.done[id]?'Unmarked':'Done');if(act==='edit')openEdit(e);if(act==='copytext')copyEventText(e);if(act==='bell'){if(S.silenced[id]&&Date.now()<S.silenced[id])mutate(s=>delete s.silenced[id],'Alarm re-enabled');else{if(activeAlarmId===id){stopAlarmLoop();activeAlarmId=null;$('alarmOverlay').classList.remove('on')}mutate(s=>{s.silenced[id]=Date.now()+10*60*1000},'Alarm silenced for 10 minutes')}}if(act==='del'){if(!confirmDeleteEvent(e))return;deleteEventById(id,e)}}
-    function openAdd(){editingId=null;$('modalTitle').textContent='New Appointment';$('fDate').value=todayISO();$('fTime').value='';$('fDuration').value='';$('fCategory').value='work';$('fPriority').value='medium';$('fTags').value='';$('fTitle').value='';$('fSubtitle').value='';$('fNotes').value='';if($('fRepeat')){$('fRepeat').checked=false;$('repeatFields').style.display='none';$('fRepeatMonths').value='2';[...$('fRepeatDays').options].forEach(o=>o.selected=false)}$('modalBack').classList.add('open')}
-    function openEdit(e){editingId=e.id;$('modalTitle').textContent='Edit Appointment';$('fDate').value=e.date||'';$('fTime').value=e.time||'';$('fDuration').value=e.duration||'';$('fCategory').value=e.category||'work';$('fPriority').value=e.priority||'medium';$('fTags').value=(e.tags||[]).join(', ');$('fTitle').value=e.title||'';$('fSubtitle').value=e.subtitle||'';$('fNotes').value=e.notes||'';if($('fRepeat')){$('fRepeat').checked=false;$('repeatFields').style.display='none'}$('modalBack').classList.add('open')}
+    function openAdd(){editingId=null;$('modalTitle').textContent='New Appointment';$('fDate').value=todayISO();$('fTime').value='';$('fDuration').value='';$('fCategory').value='work';$('fPriority').value='medium';$('fTags').value='';$('fTitle').value='';$('fSubtitle').value='';$('fNotes').value='';if($('fImportant'))$('fImportant').checked=false;if($('fRepeat')){$('fRepeat').checked=false;$('repeatFields').style.display='none';$('fRepeatMonths').value='2';[...$('fRepeatDays').options].forEach(o=>o.selected=false)}$('modalBack').classList.add('open')}
+    function openEdit(e){editingId=e.id;$('modalTitle').textContent='Edit Appointment';$('fDate').value=e.date||'';$('fTime').value=e.time||'';$('fDuration').value=e.duration||'';$('fCategory').value=e.category||'work';$('fPriority').value=e.priority||'medium';$('fTags').value=(e.tags||[]).join(', ');$('fTitle').value=e.title||'';$('fSubtitle').value=e.subtitle||'';$('fNotes').value=e.notes||'';if($('fImportant'))$('fImportant').checked=!!e.important;if($('fRepeat')){$('fRepeat').checked=false;$('repeatFields').style.display='none'}$('modalBack').classList.add('open')}
     function addMonthsClamped(d,months){const x=new Date(d);const day=x.getDate();x.setMonth(x.getMonth()+months);if(x.getDate()<day)x.setDate(0);return x}
     function weeklyRepeatEvents(fields){
       const months=Math.max(1,Math.min(24,Number($('fRepeatMonths')?.value||1)));
@@ -287,7 +443,7 @@
       }
       return out;
     }
-    function saveForm(){const fields={date:$('fDate').value,time:$('fTime').value||null,duration:$('fDuration').value.trim(),category:$('fCategory').value,priority:$('fPriority').value,title:$('fTitle').value.trim(),subtitle:$('fSubtitle').value.trim()||null,notes:$('fNotes').value.trim(),tags:$('fTags').value.split(',').map(x=>x.trim()).filter(Boolean)};if(!fields.date||!fields.title){toast('Date and title are required');return}const repeat=!!($('fRepeat')&&$('fRepeat').checked&&!editingId);mutate(s=>{if(editingId){const custom=s.custom.find(x=>x.id===editingId);if(custom)Object.assign(custom,fields);else s.edits[editingId]=fields;if(fields.notes)s.notes[editingId]=fields.notes;else delete s.notes[editingId]}else if(repeat){const events=weeklyRepeatEvents(fields);events.forEach(ev=>{s.custom.push(ev);if(ev.notes)s.notes[ev.id]=ev.notes})}else{const id='c'+Date.now();s.custom.push({id,...fields,custom:true});if(fields.notes)s.notes[id]=fields.notes}},repeat?'Repeating events saved':'Saved');$('modalBack').classList.remove('open')}
+    function saveForm(){const fields={date:$('fDate').value,time:$('fTime').value||null,duration:$('fDuration').value.trim(),category:$('fCategory').value,priority:$('fPriority').value,title:$('fTitle').value.trim(),subtitle:$('fSubtitle').value.trim()||null,notes:$('fNotes').value.trim(),tags:$('fTags').value.split(',').map(x=>x.trim()).filter(Boolean),important:!!($('fImportant')&&$('fImportant').checked)};if(!fields.date||!fields.title){toast('Date and title are required');return}const repeat=!!($('fRepeat')&&$('fRepeat').checked&&!editingId);mutate(s=>{if(editingId){const custom=s.custom.find(x=>x.id===editingId);if(custom)Object.assign(custom,fields);else s.edits[editingId]=fields;if(fields.notes)s.notes[editingId]=fields.notes;else delete s.notes[editingId];delete s.emailSent[editingId]}else if(repeat){const events=weeklyRepeatEvents(fields);events.forEach(ev=>{s.custom.push(ev);if(ev.notes)s.notes[ev.id]=ev.notes})}else{const id='c'+Date.now();s.custom.push({id,...fields,custom:true});if(fields.notes)s.notes[id]=fields.notes}},repeat?'Repeating events saved':'Saved');$('modalBack').classList.remove('open')}
     function safeDate(y,m,d){
       y=Number(y);m=Number(m);d=Number(d);
       if(y<100)y+=2000;
@@ -303,7 +459,8 @@
     function parseQuickDate(raw){
       let text=raw, date=todayISO();
       const rel=[
-        {re:/\b(day\s+after\s+tomorrow|after\s+tomorrow)\b|پس\s*فردا/i,days:2},
+        {re:/\b(day\s+after\s+day\s+after\s+tomorrow)\b|پس[\s\u200c]*پس[\s\u200c]*فردا/i,days:3},
+        {re:/\b(day\s+after\s+tomorrow|after\s+tomorrow)\b|پس[\s\u200c]*فردا/i,days:2},
         {re:/\btomorrow\b|فردا/i,days:1},
         {re:/\btoday\b|امروز/i,days:0}
       ];
@@ -392,6 +549,15 @@
       toast(`Default ${quickTemplateIndex+1}/${QUICK_TEMPLATES.length} loaded. Edit it, then Add.`)
     }
     function quickAdd(){const ev=parseQuick($('quickText').value);if(!ev){toast('Quick Add is empty');return}mutate(s=>s.custom.push(ev),'Quick event added');$('quickText').value=''}
+    function insertQuickDay(word){
+      const ta=$('quickText');
+      const dayWordRe=/^\s*(day\s+after\s+day\s+after\s+tomorrow|day\s+after\s+tomorrow|after\s+tomorrow|tomorrow|today|پس[\s\u200c]*پس[\s\u200c]*فردا|پس[\s\u200c]*فردا|فردا|امروز)\s*/i;
+      let v=ta.value.replace(dayWordRe,'');
+      ta.value=word+' '+v;
+      ta.focus();
+      const pos=word.length+1;
+      ta.setSelectionRange(pos,ta.value.length);
+    }
     function exportData(type='json'){const ev=allRaw();let name='morteza-diary-2026.'+type, mime='text/plain', content='';if(type==='json'){mime='application/json';content=JSON.stringify({events:ev,state:S,exported_at:new Date().toISOString()},null,2)}if(type==='csv'){mime='text/csv';content='date,time,duration,category,priority,title,subtitle,notes,tags,done\n'+ev.map(e=>[e.date,e.time||'',e.duration||'',e.category,e.priority,e.title,e.subtitle||'',(e.notes||'').replace(/\n/g,' '),(e.tags||[]).join('|'),!!S.done[e.id]].map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n')}if(type==='ics'){mime='text/calendar';content='BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//Morteza Diary//Final//EN\n'+ev.map(e=>{const dt=e.date.replaceAll('-','')+(e.time?'T'+e.time.replace(':','')+'00':'');return`BEGIN:VEVENT\nUID:${e.id}@morteza-diary\nDTSTAMP:${new Date().toISOString().replace(/[-:]/g,'').split('.')[0]}Z\nDTSTART:${dt}\nSUMMARY:${e.title.replace(/\n/g,' ')}\nDESCRIPTION:${(e.notes||'').replace(/\n/g,' ')}\nEND:VEVENT`}).join('\n')+'\nEND:VCALENDAR'}const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([content],{type:mime}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);toast('Exported '+type.toUpperCase())}
     function exportMenu(){const type=prompt('Export as: json, csv, or ics','ics');if(['json','csv','ics'].includes((type||'').toLowerCase()))exportData(type.toLowerCase())}
     function setViewButtons(){document.querySelectorAll('.seg button').forEach(b=>b.classList.remove('active'));(view==='calendar'?$('calTab'):$('listTab')).classList.add('active');document.querySelectorAll('.bottomnav [data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view))}
@@ -400,9 +566,14 @@
     function initSettings(){const st=JSON.parse(localStorage.getItem(SETTINGS_KEY)||'{}');const theme=st.theme||'light';document.documentElement.dataset.theme=theme;$('themeBtn').innerHTML=(theme==='dark'?'☀️':'🌙')+' <span class="txt">Theme</span>'}
     function toggleTheme(){const t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;localStorage.setItem(SETTINGS_KEY,JSON.stringify({theme:t}));$('themeBtn').innerHTML=(t==='dark'?'☀️':'🌙')+' <span class="txt">Theme</span>'}
     function boot(){initSettings();requestNotifyPermission();const c=loadLocal();if(c?.state){S=normaliseState(c.state);localVersion=c.version||0}else S=normaliseState(S);render();fullSync();checkAlarms();setInterval(()=>{renderTodayInfo();checkAlarms()},15000)}
+    $('edgeFnBtn').onclick=()=>{const src=$('edgeFnSource').textContent;$('edgeFnPre').textContent=src;$('edgeFnModalBack').classList.add('open')};
+    $('edgeFnCloseBtn').onclick=()=>$('edgeFnModalBack').classList.remove('open');
+    $('edgeFnModalBack').addEventListener('click',e=>{if(e.target.id==='edgeFnModalBack')$('edgeFnModalBack').classList.remove('open')});
+    $('edgeFnCopyBtn').onclick=async()=>{const src=$('edgeFnSource').textContent;try{await navigator.clipboard.writeText(src);toast('📋 Edge Function code copied')}catch(e){toast('Could not copy — select the text manually')}};
+    $('emailSettingsBtn').onclick=()=>{const cur=S.settings.notifyEmail||'';const val=prompt('Email address to receive 2-hour-before reminders for appointments marked ⭐ Important:',cur);if(val===null)return;const clean=val.trim();if(clean&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean)){toast('That does not look like a valid email address');return}mutate(s=>{s.settings.notifyEmail=clean},clean?'Reminder email set to '+clean:'Reminder email cleared')};
     $('alertsBtn').onclick=()=>{unlockAudioOnce();playBeep(.25,880,0);if('Notification' in window){if(Notification.permission==='granted'){notifyDevice('Alerts are on','The diary will ring from 10 minutes before the appointment while this page is open.',false);toast('🔔 Sound + notifications enabled on this device')}else{Notification.requestPermission().then(p=>{toast(p==='granted'?'🔔 Notifications enabled on this device':'Sound is on, but notifications were blocked in the browser')})}}else{toast('🔔 Sound enabled on this device (notifications not supported here)')}};
     $('wakeBtn').onclick=()=>{unlockAudioOnce();wakeLock?releaseWakeLock():requestWakeLock().then(ok=>{if(ok)toast('💡 Screen-awake mode on. Keep this diary open on each device.')})};
-    $('themeBtn').onclick=toggleTheme;$('syncBtn').onclick=()=>fullSync();$('exportBtn').onclick=exportMenu;$('prevBtn').onclick=()=>{showPast=!showPast;$('prevBtn').innerHTML=showPast?'📅 <span class="txt">Upcoming</span>':'📜 <span class="txt">Past</span>';render()};$('listTab').onclick=()=>{view='list';render()};$('calTab').onclick=()=>{view='calendar';render()};$('searchInput').oninput=()=>{searchQ=$('searchInput').value;$('clearSearch').classList.toggle('on',!!searchQ.trim());render()};$('clearSearch').onclick=()=>{$('searchInput').value='';searchQ='';$('clearSearch').classList.remove('on');render()};$('todayBtn').onclick=()=>{view='list';showPast=false;render();setTimeout(()=>document.getElementById('d-'+todayISO())?.scrollIntoView({behavior:'smooth',block:'start'}),50)};$('newBtnTop').onclick=openAdd;$('addBtn').onclick=openAdd;$('cancelBtn').onclick=()=>$('modalBack').classList.remove('open');$('modalBack').onclick=e=>{if(e.target===$('modalBack'))$('modalBack').classList.remove('open')};$('saveBtn').onclick=saveForm;if($('fRepeat'))$('fRepeat').onchange=()=>{$('repeatFields').style.display=$('fRepeat').checked?'block':'none'};$('quickText').addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();useQuickTemplate(e.shiftKey)}});$('quickTemplateBtn').onclick=()=>useQuickTemplate(false);$('quickAddBtn').onclick=quickAdd;$('quickClearBtn').onclick=()=>$('quickText').value='';$('alarmStop').onclick=stopAlarm;document.querySelectorAll('.bottomnav button').forEach(b=>b.onclick=()=>{if(b.dataset.view){view=b.dataset.view;render()}if(b.dataset.action==='add')openAdd();if(b.dataset.action==='search')$('searchInput').focus()});document.addEventListener('keydown',e=>{if(e.key==='/'&&!/input|textarea/i.test(document.activeElement.tagName)){e.preventDefault();$('searchInput').focus()}if(e.key.toLowerCase()==='n'&&!/input|textarea/i.test(document.activeElement.tagName))openAdd();if(e.key==='Escape'){$('modalBack').classList.remove('open');$('alarmOverlay').classList.remove('on')}});boot();
+    $('themeBtn').onclick=toggleTheme;$('syncBtn').onclick=()=>fullSync();$('exportBtn').onclick=exportMenu;$('prevBtn').onclick=()=>{showPast=!showPast;$('prevBtn').innerHTML=showPast?'📅 <span class="txt">Upcoming</span>':'📜 <span class="txt">Past</span>';render()};$('listTab').onclick=()=>{view='list';render()};$('calTab').onclick=()=>{view='calendar';render()};$('searchInput').oninput=()=>{searchQ=$('searchInput').value;$('clearSearch').classList.toggle('on',!!searchQ.trim());render()};$('clearSearch').onclick=()=>{$('searchInput').value='';searchQ='';$('clearSearch').classList.remove('on');render()};$('todayBtn').onclick=()=>{view='list';showPast=false;render();setTimeout(()=>document.getElementById('d-'+todayISO())?.scrollIntoView({behavior:'smooth',block:'start'}),50)};$('newBtnTop').onclick=openAdd;$('addBtn').onclick=openAdd;$('cancelBtn').onclick=()=>$('modalBack').classList.remove('open');$('modalBack').onclick=e=>{if(e.target===$('modalBack'))$('modalBack').classList.remove('open')};$('saveBtn').onclick=saveForm;if($('fRepeat'))$('fRepeat').onchange=()=>{$('repeatFields').style.display=$('fRepeat').checked?'block':'none'};$('quickText').addEventListener('keydown',e=>{if(e.key==='Tab'){e.preventDefault();useQuickTemplate(e.shiftKey)}});$('quickTemplateBtn').onclick=()=>useQuickTemplate(false);document.querySelectorAll('#quickDayChips .chip').forEach(b=>b.onclick=()=>insertQuickDay(b.dataset.word));$('quickAddBtn').onclick=quickAdd;$('quickClearBtn').onclick=()=>$('quickText').value='';$('alarmStop').onclick=stopAlarm;document.querySelectorAll('.bottomnav button').forEach(b=>b.onclick=()=>{if(b.dataset.view){view=b.dataset.view;render()}if(b.dataset.action==='add')openAdd();if(b.dataset.action==='search')$('searchInput').focus()});document.addEventListener('keydown',e=>{if(e.key==='/'&&!/input|textarea/i.test(document.activeElement.tagName)){e.preventDefault();$('searchInput').focus()}if(e.key.toLowerCase()==='n'&&!/input|textarea/i.test(document.activeElement.tagName))openAdd();if(e.key==='Escape'){$('modalBack').classList.remove('open');$('alarmOverlay').classList.remove('on')}});boot();
   </script>
 </body>
 </html>
